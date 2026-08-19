@@ -1274,7 +1274,9 @@ git commit -m "feat(pdf): AcroForm field walk with widget resolution"
 - Consumes: `PDFDoc`, `tools/paths.ts`
 - Produces: `export function extractJavaScript(doc: PDFDoc): Promise<Map<string, string>>` — function name → source. Run as a script it writes `build/js/<name>.js` and prints a count.
 
-**Encoding, established by measurement:** the 797 streams are mixed — 383 decode as UTF-8, 373 as CP1252, 41 as neither. Order matters: BOM, then strict UTF-8, then windows-1252, then latin1. A wrong order silently mangles every umlaut, and umlauts are load-bearing (`Körper`, `Zähigkeit`, `Größe`, `Legendär`).
+**Encoding, established by measurement:** the 797 streams are mixed — **383 decode as UTF-8 and 414 do not**. Order matters: BOM, then strict UTF-8, then windows-1252, then latin1. A wrong order silently mangles every umlaut, and umlauts are load-bearing (`Körper`, `Zähigkeit`, `Größe`, `Legendär`).
+
+How those 414 split between the windows-1252 and latin1 branches is **runtime-dependent**, so do not assert it. Python's `cp1252` codec raises on the five unassigned bytes (0x81, 0x8D, 0x8F, 0x90, 0x9D) and falls through to latin1; Node's ICU `windows-1252` decoder maps them to the same C1 code points and never reaches the fallback. Both runtimes produce **identical output** — only the path differs. Assert the total (797) and the absence of `U+FFFD`, never the branch split.
 
 - [ ] **Step 1: Write the failing test**
 
