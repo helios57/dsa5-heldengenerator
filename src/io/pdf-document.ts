@@ -19,6 +19,13 @@ export class PDFDoc {
   static async load(bytes: Uint8Array): Promise<PDFDoc> {
     const doc = new PDFDoc(bytes);
     await doc.parseXrefChain();
+    // An encrypted document's strings and streams are RC4/AES-obfuscated; nothing in this
+    // module decrypts them. Without this check, reading an encrypted PDF doesn't fail - it
+    // just silently returns garbled strings and undecodable streams. Plan 3 parses
+    // user-supplied PDFs, so this must be a loud, specific error, not garbage output.
+    if (doc.trailer.has('Encrypt')) {
+      throw new Error('encrypted PDF documents are not supported');
+    }
     return doc;
   }
 

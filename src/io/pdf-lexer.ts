@@ -187,13 +187,27 @@ export class Parser {
 }
 
 export function applyPredictor(data: Uint8Array, parms: PdfDict): Uint8Array {
+  // `numeric()` cannot resolve indirect references (it has no PDFDoc to call `get` on), so
+  // a present-but-non-numeric value (e.g. an unresolved `{ ref, gen }`) is a caller bug, not
+  // a legitimately absent key — silently substituting the PDF-spec default in that case would
+  // produce a wrong row length and garbage-decode the stream instead of failing loudly.
+  // Only a genuinely *missing* key falls back to the spec default.
   const numeric = (key: string, fallback: number): number => {
     const v = parms.get(key);
-    return typeof v === 'number' ? v : fallback;
+    if (v === undefined) return fallback;
+    if (typeof v !== 'number') {
+      throw new Error(`PDF stream /${key} is not a direct number (indirect reference?)`);
+    }
+    return v;
   };
   const predictor = numeric('Predictor', 1);
   if (predictor < 2) return data;
-  if (predictor === 2) return data;
+  if (predictor === 2) {
+    throw new Error('unsupported stream predictor: TIFF Predictor 2 (/Predictor 2) is not implemented');
+  }
+  if (predictor < 10) {
+    throw new Error(`invalid stream /Predictor value: ${predictor} (valid values are 1, 2, and 10-15)`);
+  }
 
   const colors = numeric('Colors', 1);
   const bpc = numeric('BitsPerComponent', 8);

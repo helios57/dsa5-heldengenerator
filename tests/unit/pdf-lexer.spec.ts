@@ -89,3 +89,27 @@ test('applyPredictor reverses PNG Up filtering', () => {
   parms.set('Columns', 3);
   expect([...applyPredictor(data, parms)]).toEqual([1, 2, 3, 2, 3, 4]);
 });
+
+test('applyPredictor throws on TIFF Predictor 2 instead of silently passing bytes through', () => {
+  const data = new Uint8Array([1, 2, 3, 4]);
+  const parms: PdfDict = new Map([['Predictor', 2]]);
+  expect(() => applyPredictor(data, parms)).toThrow(/TIFF/);
+});
+
+test('applyPredictor throws on an invalid /Predictor value instead of mis-decoding it as PNG', () => {
+  const data = new Uint8Array([1, 2, 3, 4]);
+  for (const bad of [3, 5, 9]) {
+    const parms: PdfDict = new Map([['Predictor', bad]]);
+    expect(() => applyPredictor(data, parms), `Predictor ${bad}`).toThrow(/invalid.*Predictor/i);
+  }
+});
+
+test('applyPredictor throws when /Columns is an unresolved indirect reference instead of defaulting', () => {
+  const data = new Uint8Array([2, 1, 2, 3, 2, 1, 1, 1]);
+  const parms: PdfDict = new Map();
+  parms.set('Predictor', 12);
+  parms.set('Colors', 1);
+  parms.set('BitsPerComponent', 8);
+  parms.set('Columns', { ref: 9, gen: 0 });
+  expect(() => applyPredictor(data, parms)).toThrow(/Columns/);
+});

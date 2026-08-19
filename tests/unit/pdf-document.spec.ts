@@ -127,3 +127,21 @@ test('loadObjStm rejects an /N that cannot fit the stream data instead of spinni
   expect(error).not.toBeInstanceOf(RangeError);
   expect((error as Error).message).toBe('object stream /N exceeds stream data size');
 });
+
+test('load rejects an encrypted document instead of silently returning garbled strings', async () => {
+  // Nothing in this module decrypts RC4/AES-obfuscated strings and streams; an unflagged
+  // encrypted PDF would otherwise "load" successfully and just produce garbage. Plan 3
+  // parses user-supplied PDFs, so this must fail loudly at load time instead.
+  const xrefText =
+    'xref\n0 1\n0000000000 65535 f \ntrailer\n<< /Size 1 /Encrypt 5 0 R >>\nstartxref\n0\n%%EOF';
+  const bytes = bytesFrom(xrefText);
+
+  let error: unknown;
+  try {
+    await PDFDoc.load(bytes);
+  } catch (e) {
+    error = e;
+  }
+  expect(error).toBeInstanceOf(Error);
+  expect((error as Error).message).toMatch(/encrypt/i);
+});
