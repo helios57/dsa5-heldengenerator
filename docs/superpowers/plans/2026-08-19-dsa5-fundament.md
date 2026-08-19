@@ -418,7 +418,9 @@ test('inflate round-trips a compressed stream', async () => {
   const src = bytesFrom('the quick brown fox '.repeat(20));
   const packed = new Uint8Array(
     await new Response(
-      new Blob([src]).stream().pipeThrough(new CompressionStream('deflate')),
+      // `as BlobPart` mirrors inflate(): TS 6's DOM lib narrowed BlobPart to require
+      // ArrayBufferView<ArrayBuffer>, but Uint8Array defaults to Uint8Array<ArrayBufferLike>.
+      new Blob([src as BlobPart]).stream().pipeThrough(new CompressionStream('deflate')),
     ).arrayBuffer(),
   );
   expect(latin1(await inflate(packed))).toBe(latin1(src));
