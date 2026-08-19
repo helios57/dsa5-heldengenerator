@@ -279,8 +279,13 @@ http
 </html>
 ```
 
-`src/main.ts`:
+`src/main.ts` — the `export {}` is required, not decorative: without a top-level
+import or export TypeScript treats the file as a script, and `const status` then
+collides with the ambient DOM global `window.status` (`TS2451`). The file is loaded
+as `<script type="module">`, so forcing module scope is correct anyway.
 ```ts
+export {}; // force module scope; otherwise `status` collides with the DOM global
+
 const status = document.querySelector<HTMLElement>('#status');
 if (status) status.textContent = 'bereit';
 ```
@@ -1047,7 +1052,27 @@ export function fieldValue(doc: PDFDoc, field: FieldInfo | undefined): Promise<s
 export function decodeText(bytes: Uint8Array): string;
 ```
 
-**Critical behaviour, established by measurement:** a node with both `/T` and `/FT` is itself a field **even when it has named kids** — an earlier walk that returned early here lost 528 fields. Widgets are kids **without** `/T`; a field with no such kids is its own widget. `MU_1` must report exactly **6 widgets** — Plan 3's appearance-stream writer depends on this, because writing `/AP` on the field alone leaves six stale appearances that print the wrong value.
+**Structure, established by measurement against this exact PDF:**
+
+| Measurement | Value |
+|---|---:|
+| named nodes in the field tree (all `/T` nodes) | 5970 |
+| **terminal fields** (no named kids) | **5442** |
+| terminal fields lacking their own `/FT` | **0** |
+| non-terminal nodes carrying their own `/FT` | **0** |
+
+So `has('FT')` and "is terminal" coincide exactly, and **no `/FT` inheritance occurs
+anywhere in this document**. The 528-node difference is pure container nodes such as
+`AEAnzeige` and `AEAnzeige.RTF`, whose real fields are the leaves below them
+(`AEAnzeige.FontSize`, `AEAnzeige.RTF.FontSize`). Containers are **not** fillable and
+must stay out of the map — including them would feed 528 non-fields to Plan 3's writer.
+422 terminal fields have dotted names, so the walk must still descend through containers
+and build qualified names.
+
+Widgets are kids **without** `/T`; a field with no such kids is its own widget. `MU_1`
+must report exactly **6 widgets** — Plan 3's appearance-stream writer depends on this,
+because writing `/AP` on the field alone leaves six stale appearances that print the
+old value.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -1068,8 +1093,8 @@ test.beforeAll(async () => {
   fields = await readAcroFields(doc);
 });
 
-test('finds every named field in the document', () => {
-  expect(fields.size).toBe(5970);
+test('finds every terminal field, and only terminal fields', () => {
+  expect(fields.size).toBe(5442);
 });
 
 test('MU_1 carries six widgets, each with its own appearance', () => {
@@ -1086,9 +1111,22 @@ test('a field without kids is its own widget', () => {
   expect(held!.widgets[0]!.ref).toBe(held!.ref);
 });
 
-test('nodes with named kids are still fields themselves', () => {
-  expect(fields.has('AEAnzeige')).toBe(true);
-  expect(fields.has('AEAnzeige.RTF')).toBe(true);
+test('container nodes are excluded, their leaf fields are kept', () => {
+  // AEAnzeige and AEAnzeige.RTF are grouping nodes with no /FT - not fillable.
+  expect(fields.has('AEAnzeige')).toBe(false);
+  expect(fields.has('AEAnzeige.RTF')).toBe(false);
+  // The real fields are the leaves below them, reached through qualified names.
+  expect(fields.has('AEAnzeige.FontSize')).toBe(true);
+  expect(fields.has('AEAnzeige.RTF.FontSize')).toBe(true);
+});
+
+test('every terminal field carries its own /FT (no inheritance in this document)', () => {
+  for (const field of fields.values()) expect(field.dict.has('FT'), field.name).toBe(true);
+});
+
+test('the walk descends through containers to build qualified names', () => {
+  const dotted = [...fields.keys()].filter((n) => n.includes('.'));
+  expect(dotted.length).toBe(422);
 });
 
 test('exposes the display attributes the writer needs', () => {
@@ -1213,7 +1251,7 @@ export async function fieldValue(doc: PDFDoc, field: FieldInfo | undefined): Pro
 - [ ] **Step 4: Run test and typecheck**
 
 Run: `npx playwright test --project=unit tests/unit/pdf-acroform.spec.ts && npm run typecheck`
-Expected: PASS — 7 tests. If `fields.size` is not exactly 5970, the walk drops or duplicates nodes; fix the walk, never the expected number.
+Expected: PASS — 9 tests. If `fields.size` is not exactly 5442, the walk drops or duplicates nodes; fix the walk, never the expected number. In particular, do **not** relax the `has('FT')` guard to reach a higher count — that admits 528 container nodes.
 
 - [ ] **Step 5: Commit**
 
