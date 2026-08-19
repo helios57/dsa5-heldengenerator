@@ -65,3 +65,20 @@ export function findeZeile(
 export function summeGesamt(gesamt: string): number {
   return gesamt.split('+').reduce((summe, teil) => summe + Number(teil), 0);
 }
+
+/**
+ * "6/24" mit stufe=2 -> 24 (1-basiert). Einfache, einstufige Werte (z. B. "-30") liefern bei
+ * jeder Stufe denselben Wert. Spiegelt absichtlich dieselbe Index-Klemmung wie das private
+ * `eigenheitKosten` in core/apkonto.ts, damit die Vorschau in der UI nie von der tatsächlichen
+ * AP-Kontoführung abweicht.
+ */
+export function stufenKosten(basisKosten: string, stufe: number): number {
+  const teile = basisKosten.split('/').map(Number);
+  const index = Math.min(Math.max(stufe - 1, 0), teile.length - 1);
+  return teile[index] ?? 0;
+}
+
+/** Anzahl der Stufen aus `BasisKosten`, z. B. "6/24" -> 2, "-30" -> 1. */
+export function stufenAnzahl(basisKosten: string): number {
+  return basisKosten.split('/').length;
+}

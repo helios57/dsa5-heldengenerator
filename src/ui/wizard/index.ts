@@ -56,6 +56,9 @@ import { schrittKonzept } from './steps/konzept.ts';
 import { schrittSpezies } from './steps/spezies.ts';
 import { schrittKultur } from './steps/kultur.ts';
 import { schrittEigenschaften } from './steps/eigenschaften.ts';
+import { schrittProfession } from './steps/profession.ts';
+import { schrittVorNachteile } from './steps/vorNachteile.ts';
+import { schrittFertigkeiten } from './steps/fertigkeiten.ts';
 import type { Schritt, SchrittKontext } from './types.ts';
 import type { Store } from '../../state/store.ts';
 import type { DatenIndex } from '../../core/apkonto.ts';
@@ -65,6 +68,9 @@ export const SCHRITTE: readonly Schritt[] = [
   schrittSpezies,
   schrittKultur,
   schrittEigenschaften,
+  schrittProfession,
+  schrittVorNachteile,
+  schrittFertigkeiten,
 ];
 
 export type WizardElemente = {

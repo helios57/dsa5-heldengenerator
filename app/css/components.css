@@ -574,3 +574,198 @@ label.feld-label {
 .eigenschaften-summe strong {
   color: var(--f-text);
 }
+
+/* --- Profession: Filterzeile, Ergebnisliste, Paket-Vorschau ------------- */
+
+.filterzeile {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.6rem;
+}
+
+.filterzeile__feld {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.filterzeile__feld--wachsend {
+  flex: 1 1 16rem;
+}
+
+.filterzeile__feld--wachsend .suchfeld {
+  margin-bottom: 0;
+}
+
+.filterzeile__feld--ap {
+  gap: 0.35rem;
+}
+
+.filterzeile__label {
+  font-size: 0.78rem;
+  color: var(--f-text-dim);
+}
+
+.filterzeile select {
+  background: var(--f-surface-2);
+  border: 1px solid var(--f-border);
+  color: var(--f-text);
+  padding: 0.45rem 0.5rem;
+  font-size: 0.85rem;
+  border-radius: var(--f-radius-s);
+}
+
+.filterzeile select:focus-visible {
+  border-color: var(--f-bronze);
+}
+
+.filterzeile__feld--ap .stepper-feld {
+  width: 4.5rem;
+}
+
+.ergebnis-anzahl {
+  font-size: 0.78rem;
+  color: var(--f-text-dim);
+  margin: 0 0 0.5rem;
+}
+
+.mehr-knopf {
+  display: block;
+  width: 100%;
+  margin-top: 0.6rem;
+  padding: 0.55rem;
+  background: var(--f-surface-2);
+  border: 1px dashed var(--f-border-strong);
+  color: var(--f-text-muted);
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.mehr-knopf:hover {
+  background: var(--f-surface-3);
+  color: var(--f-text);
+}
+
+.profession-paket {
+  padding: 0.75rem 0.85rem 0.4rem;
+  background: var(--f-surface);
+  border-left: 3px solid var(--f-bronze);
+  margin: -1px 0 0.6rem;
+}
+
+/* --- Vor-/Nachteile: Eigenheit-Zeilen ------------------------------------ */
+
+.eigenheit-gruppe {
+  margin-bottom: 1rem;
+}
+
+.eigenheit-liste {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.eigenheit-zeile {
+  border: 1px solid var(--f-border);
+  background: var(--f-surface);
+  padding: 0.7rem 0.85rem;
+}
+
+.eigenheit-kopf {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.75rem;
+}
+
+.eigenheit-name {
+  font-family: var(--f-font-display);
+  font-size: 0.95rem;
+}
+
+.eigenheit-kosten {
+  color: var(--f-text-muted);
+  white-space: nowrap;
+}
+
+.eigenheit-steuerung {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.eigenheit-steuerung select {
+  background: var(--f-surface-2);
+  border: 1px solid var(--f-border);
+  color: var(--f-text);
+  padding: 0.4rem 0.5rem;
+  font-size: 0.82rem;
+  border-radius: var(--f-radius-s);
+}
+
+.stepper-knopf-breit {
+  background: var(--f-surface-2);
+  border: 1px solid var(--f-border-strong);
+  color: var(--f-text);
+  padding: 0.4rem 0.9rem;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+
+.stepper-knopf-breit:hover {
+  background: var(--f-surface-3);
+}
+
+.stepper-knopf-breit[aria-pressed='true'] {
+  border-color: var(--f-bronze);
+  background: var(--f-bronze-wash);
+  color: var(--f-bronze-strong);
+}
+
+.eigenheit-instanzen {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.eigenheit-instanz {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  padding: 0.3rem 0.5rem;
+  background: var(--f-surface-2);
+  border-left: 2px solid var(--f-bronze);
+  font-size: 0.82rem;
+  color: var(--f-text-muted);
+}
+
+.entfernen-knopf {
+  background: transparent;
+  border: 1px solid var(--f-border-strong);
+  color: var(--f-text-dim);
+  width: 1.6rem;
+  height: 1.6rem;
+  line-height: 1;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.entfernen-knopf:hover {
+  border-color: var(--f-oxblood);
+  color: var(--f-oxblood-strong);
+}
+
+.eigenheit-zeile .kultur-details {
+  margin-top: 0.6rem;
+}
