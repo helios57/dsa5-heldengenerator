@@ -9,6 +9,8 @@ export class PDFDoc {
   readonly trailer: PdfDict = new Map();
   private readonly cache = new Map<number, PdfObject | null>();
   private readonly objStmCache = new Map<number, Map<number, PdfValue>>();
+  private readonly objStmLoading = new Set<number>();
+  private readonly seenXrefOffsets = new Set<number>();
 
   private constructor(bytes: Uint8Array) {
     this.bytes = bytes;
@@ -30,9 +32,8 @@ export class PDFDoc {
     const last = offsets.at(-1);
     if (last === undefined) throw new Error('no startxref found');
     let next: number | undefined = last;
-    const seen = new Set<number>();
-    while (next !== undefined && !seen.has(next)) {
-      seen.add(next);
+    while (next !== undefined && !this.seenXrefOffsets.has(next)) {
+      this.seenXrefOffsets.add(next);
       next = await this.parseXrefSection(next);
     }
   }
@@ -54,6 +55,8 @@ export class PDFDoc {
       const count = parseInt(p.token() ?? '', 10);
       if (Number.isNaN(first) || Number.isNaN(count)) break;
       p.ws();
+      const maxEntries = Math.floor((this.bytes.length - p.p) / 20);
+      if (count > maxEntries) throw new Error('xref subsection count exceeds buffer size');
       for (let i = 0; i < count; i++) {
         const entry = latin1(this.bytes.subarray(p.p, p.p + 20));
         p.p += 20;
@@ -69,7 +72,10 @@ export class PDFDoc {
     if (!isDict(trailer)) return undefined;
     this.mergeTrailer(trailer);
     const hybrid = trailer.get('XRefStm');
-    if (typeof hybrid === 'number') await this.parseXrefSection(hybrid);
+    if (typeof hybrid === 'number' && !this.seenXrefOffsets.has(hybrid)) {
+      this.seenXrefOffsets.add(hybrid);
+      await this.parseXrefSection(hybrid);
+    }
     const prev = trailer.get('Prev');
     return typeof prev === 'number' ? prev : undefined;
   }
@@ -89,6 +95,9 @@ export class PDFDoc {
       ? indexRaw.map((x) => (typeof x === 'number' ? x : 0))
       : [0, typeof size === 'number' ? size : 0];
 
+    const rowWidth = (w0 ?? 1) + (w1 ?? 0) + (w2 ?? 0);
+    if (rowWidth <= 0) throw new Error('xref stream /W has zero row width');
+
     let pos = 0;
     const readField = (width: number, fallback: number): number => {
       if (width === 0) return fallback;
@@ -100,6 +109,8 @@ export class PDFDoc {
     for (let s = 0; s < index.length; s += 2) {
       const first = index[s] ?? 0;
       const count = index[s + 1] ?? 0;
+      const maxRows = Math.floor((data.length - pos) / rowWidth);
+      if (count > maxRows) throw new Error('xref stream /Index count exceeds stream data size');
       for (let i = 0; i < count; i++) {
         const type = readField(w0 ?? 1, 1);
         const f2 = readField(w1 ?? 0, 0);
@@ -175,29 +186,40 @@ export class PDFDoc {
   private async loadObjStm(stmNum: number): Promise<Map<number, PdfValue>> {
     const cached = this.objStmCache.get(stmNum);
     if (cached) return cached;
-    const entry = this.index.get(stmNum);
-    if (!entry || entry.type !== 1) throw new Error(`object stream ${stmNum} not found`);
-
-    const p = new Parser(this.bytes, entry.offset);
-    p.token(); p.token(); p.token();
-    const dict = p.obj();
-    if (!isDict(dict)) throw new Error('object stream is not a dictionary');
-    const data = await this.readStream(p, dict);
-    const count = dict.get('N');
-    const first = dict.get('First');
-    if (typeof count !== 'number' || typeof first !== 'number') {
-      throw new Error('object stream missing /N or /First');
+    if (this.objStmLoading.has(stmNum)) {
+      throw new Error(`object stream ${stmNum} is self-referential`);
     }
+    this.objStmLoading.add(stmNum);
+    try {
+      const entry = this.index.get(stmNum);
+      if (!entry || entry.type !== 1) throw new Error(`object stream ${stmNum} not found`);
 
-    const header = new Parser(data, 0);
-    const pairs: Array<[number, number]> = [];
-    for (let i = 0; i < count; i++) {
-      pairs.push([parseInt(header.token() ?? '', 10), parseInt(header.token() ?? '', 10)]);
+      const p = new Parser(this.bytes, entry.offset);
+      p.token(); p.token(); p.token();
+      const dict = p.obj();
+      if (!isDict(dict)) throw new Error('object stream is not a dictionary');
+      const data = await this.readStream(p, dict);
+      const count = dict.get('N');
+      const first = dict.get('First');
+      if (typeof count !== 'number' || typeof first !== 'number') {
+        throw new Error('object stream missing /N or /First');
+      }
+      if (count < 0 || count > data.length) {
+        throw new Error('object stream /N exceeds stream data size');
+      }
+
+      const header = new Parser(data, 0);
+      const pairs: Array<[number, number]> = [];
+      for (let i = 0; i < count; i++) {
+        pairs.push([parseInt(header.token() ?? '', 10), parseInt(header.token() ?? '', 10)]);
+      }
+      const map = new Map<number, PdfValue>();
+      for (const [num, off] of pairs) map.set(num, new Parser(data, first + off).obj());
+      this.objStmCache.set(stmNum, map);
+      return map;
+    } finally {
+      this.objStmLoading.delete(stmNum);
     }
-    const map = new Map<number, PdfValue>();
-    for (const [num, off] of pairs) map.set(num, new Parser(data, first + off).obj());
-    this.objStmCache.set(stmNum, map);
-    return map;
   }
 
   async resolve(value: PdfObject | undefined): Promise<PdfObject | null> {
