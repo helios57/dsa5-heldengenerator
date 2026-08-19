@@ -104,6 +104,22 @@ export function normalisiereText<T>(value: T): T {
   return value;
 }
 
+/**
+ * talente.Probe already comes back from the source JS as an array (`['MU','IN','GE']`),
+ * but zauber.Probe and liturgien.Probe come back as a single slash-joined string
+ * (`"IN/KO/KK"`) — a different shape for the same concept. Both feed the same
+ * `readonly EigenschaftName[]` parameters in src/core/limits.ts (maxFertigkeit,
+ * maxZauber), so every dataset's `Probe` field must have the same array shape.
+ * `Probe1`/`Probe2`/`Probe3` give a clean, already-split source for the string form;
+ * used here in preference to parsing the joined string. Mutates `row` in place.
+ */
+function normalisiereProbe(row: Record<string, unknown>): void {
+  const { Probe1, Probe2, Probe3 } = row;
+  if (typeof Probe1 === 'string' && typeof Probe2 === 'string' && typeof Probe3 === 'string') {
+    row['Probe'] = [Probe1, Probe2, Probe3];
+  }
+}
+
 export function buildDataset(ctx: RulesContext, spec: DatasetSpec): Array<Record<string, unknown>> {
   const rows: Array<Record<string, unknown>> = [];
   const seen = new Set<string>();
@@ -126,6 +142,7 @@ export function buildDataset(ctx: RulesContext, spec: DatasetSpec): Array<Record
       usable = true;
     }
     if (!usable) continue;
+    normalisiereProbe(row);
     const normalised = normalisiereText(row);
     const id = normalised['ID'];
     if (typeof id === 'string') {

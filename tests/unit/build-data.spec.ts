@@ -214,3 +214,29 @@ test('the generated vorteile dataset carries a non-empty Liste for VT227', () =>
   expect(vt227).toMatchObject({ Liste: ['Schwanz'] });
 });
 
+// --- zauber.Probe must have the same array shape as talente.Probe, not a joined string ---
+
+test('zauber Probe is an array of three attribute abbreviations, like talente.Probe', () => {
+  const spec = DATASETS.find((d) => d.key === 'zauber');
+  expect(spec).toBeDefined();
+  const rows = buildDataset(ctx, spec!);
+  expect(rows.length).toBeGreaterThan(0);
+  const probe = rows[0]!['Probe'];
+  expect(Array.isArray(probe)).toBe(true);
+  expect(probe).toHaveLength(3);
+  for (const attribut of probe as unknown[]) {
+    expect(typeof attribut).toBe('string');
+    expect(attribut).toMatch(/^[A-Z]{2}$/);
+  }
+  // every row, not just the first — Probe1/Probe2/Probe3 always co-occur with Probe
+  for (const row of rows) expect(Array.isArray(row['Probe']), JSON.stringify(row)).toBe(true);
+});
+
+test('liturgien Probe is likewise normalised to an array', () => {
+  const spec = DATASETS.find((d) => d.key === 'liturgien');
+  expect(spec).toBeDefined();
+  const rows = buildDataset(ctx, spec!);
+  expect(rows.length).toBeGreaterThan(0);
+  for (const row of rows) expect(Array.isArray(row['Probe']), JSON.stringify(row)).toBe(true);
+});
+
