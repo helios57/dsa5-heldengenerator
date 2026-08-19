@@ -173,7 +173,23 @@ beziehungsweise **Aspektkenntnis** aufheben. **Herausragende Fertigkeit** und
 **Herausragende Kampftechnik** heben die `+2`-Grenze je Rang um 1 an; das PDF wertet
 das bereits aus.
 
-### 5.3 Startwerte
+### 5.3 Gekaufte gegen endgültige Eigenschaften
+
+**Die Höchstwerte des Erfahrungsgrades gelten für die _gekauften_ Eigenschaften.**
+Die Speziesmodifikatoren kommen danach obendrauf, und der Endwert auf dem Bogen darf
+die Grenze deshalb überschreiten.
+
+Nachgewiesen an einem echten Heldendokument: eine Auelfin auf *Erfahren* zeigt IN 15
+und GE 15, obwohl der Höchstwert 14 beträgt. Elfen erhalten IN +1 und GE +1 sowie
+wahlweise KL −2 oder KK −2. Gekauft wurden also IN 14 und GE 14 — exakt an der Grenze —
+und KK 11 (angezeigt 9). Die Summe beträgt in beiden Lesarten 100.
+
+Für die Umsetzung heißt das: `pruefeEigenschaften` ist mit den **gekauften** Werten
+aufzurufen. Das Charaktermodell führt beide Größen getrennt; die Oberfläche zeigt den
+Endwert, die Regelprüfung sieht den gekauften. Wer die Endwerte prüft, meldet gültige
+Helden fälschlich als regelwidrig.
+
+### 5.4 Startwerte
 
 ```
 Eigenschaften    je 8   (Summe 64 bereits verbraucht), Minimum 8 am Ende von Schritt 4
@@ -181,7 +197,7 @@ Kampftechniken   je 6
 Fertigkeiten     je 0
 ```
 
-### 5.4 Vor- und Nachteile
+### 5.5 Vor- und Nachteile
 
 > „Die maximale Zahl an Abenteuerpunkten, die man in Vorteile investieren kann,
 > beträgt 80 Punkte. Durch Nachteile kann man ebenfalls nur 80 Abenteuerpunkte
@@ -206,7 +222,7 @@ nicht `BasisKosten`.
 (z. B. `NT65 Nicht humanoid = -30`). Das Vorzeichen darf beim Aufsummieren nicht
 zusätzlich gedreht werden.
 
-### 5.5 Kostenformeln
+### 5.6 Kostenformeln
 
 Aus dem PDF-JavaScript verifiziert, Aktivierungskosten zusätzlich im Regel-Wiki belegt.
 
@@ -230,7 +246,7 @@ p <= 11 -> p * 4
 p > 11  -> 44 + (p - 11) * (p - 10) * 2
 ```
 
-### 5.6 Abgeleitete Werte
+### 5.7 Abgeleitete Werte
 
 Grundwerte (GW) je Spezies aus `SpeziesGetInfo`. Regel-Wiki und PDF stimmen überein.
 ```
@@ -253,7 +269,7 @@ Alle Helden starten mit **3 Schicksalspunkten**, unabhängig vom Erfahrungsgrad.
 *Anmerkung:* Das Regel-Wiki schreibt bei der Zähigkeit versehentlich
 „Seelenkraft-Grundwert". Gemeint und im PDF umgesetzt ist der Zähigkeit-Grundwert.
 
-### 5.7 Restliche AP
+### 5.8 Restliche AP
 
 > „Auf diese Weise dürfen nicht mehr als 10 Abenteuerpunkte einbehalten werden."
 
@@ -261,7 +277,7 @@ Höchstens **10 AP** dürfen ungenutzt in das Spiel mitgenommen werden; ein nega
 Saldo ist unzulässig. Die Regel verhindert, dass die Erschaffungsgrenzen direkt nach
 Spielbeginn umgangen werden. Der Prüfbericht in Schritt 12 setzt das durch.
 
-### 5.8 Startalter
+### 5.9 Startalter
 
 Tabelle je Spezies und Erfahrungsgrad, Grundalter plus Würfelwurf
 (Mensch auf *Erfahren* 16+1W3, Elf 26+2W6). Die vollständige Tabelle liegt bereits im
