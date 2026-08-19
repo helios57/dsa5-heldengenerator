@@ -96,6 +96,23 @@ test('a non-finite attribute value is reported, not silently summed', () => {
   expect(kk).toMatchObject({ code: 'eigenschaft-fehlt' });
 });
 
+// --- Ruling R13, executable: pruefeEigenschaften must see purchased (gekaufte) values,
+// not final ones. Species modifiers are applied afterwards, so a final value may
+// legitimately exceed the Erfahrungsgrad cap. Mirrors the verified real Auelfin sheet:
+// IN 15 final / IN 14 purchased on Erfahren (cap 14), with an offsetting -1 elsewhere so
+// the point total doesn't itself confound the example (as on the real sheet, the sum is
+// 100 either way). ---
+
+test('Ruling R13: purchased IN 14 passes on Erfahren; final IN 15 is reported', () => {
+  const gekauft: Eigenschaften = { MU: 14, KL: 14, IN: 14, CH: 12, FF: 12, GE: 12, KO: 12, KK: 10 };
+  expect(pruefeEigenschaften({ eigenschaften: gekauft, grad: 'Erfahren' })).toEqual([]);
+
+  const final: Eigenschaften = { ...gekauft, IN: 15, KK: 9 };
+  const problems = pruefeEigenschaften({ eigenschaften: final, grad: 'Erfahren' });
+  expect(problems.map((p) => p.code)).toContain('eigenschaft-max');
+  expect(problems.find((p) => p.feld === 'IN')).toMatchObject({ ist: 15, erlaubt: 14 });
+});
+
 test('at most ten AP may be carried over, and never a negative balance', () => {
   expect(pruefeRestAP({ budget: 1100, ausgegeben: 1095 })).toEqual([]);
   expect(pruefeRestAP({ budget: 1100, ausgegeben: 1100 })).toEqual([]);

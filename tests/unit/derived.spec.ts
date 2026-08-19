@@ -46,3 +46,19 @@ test('basiswerte assembles the whole set', () => {
 test('every hero starts with three Schicksalspunkte', () => {
   expect(SCHICKSALSPUNKTE_START).toBe(3);
 });
+
+// --- Regression vectors verified against two real filled character sheets. Numbers only,
+// no PDF referenced: a Zwergin (species LE base 8) with KO 13 shows LE 34 on the sheet; an
+// Auelfin (species LE base 2) with KO 13 shows LE 28. ---
+
+test('Lebensenergie matches a real Zwergin sheet: species LE base 8, KO 13 -> LE 34', () => {
+  const g: Grundwerte = { le: 8, sk: 0, zk: 0, gs: 0 };
+  const e: Eigenschaften = { MU: 0, KL: 0, IN: 0, CH: 0, FF: 0, GE: 0, KO: 13, KK: 0 };
+  expect(lebensenergie(g, e)).toBe(34);
+});
+
+test('Lebensenergie matches a real Auelfin sheet: species LE base 2, KO 13 -> LE 28', () => {
+  const g: Grundwerte = { le: 2, sk: 0, zk: 0, gs: 0 };
+  const e: Eigenschaften = { MU: 0, KL: 0, IN: 0, CH: 0, FF: 0, GE: 0, KO: 13, KK: 0 };
+  expect(lebensenergie(g, e)).toBe(28);
+});

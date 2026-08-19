@@ -1,6 +1,9 @@
 import { test, expect } from '@playwright/test';
 import { createRulesContext } from '../../tools/acrobat-shim.ts';
-import { buildDataset, DATASETS, normalisiereText } from '../../tools/build-data.ts';
+import {
+  buildDataset, DATASETS, normalisiereText, resetSuppressionCounts, suppressionCounts,
+} from '../../tools/build-data.ts';
+import type { DatasetSpec } from '../../tools/build-data.ts';
 import type { RulesContext } from '../../tools/acrobat-shim.ts';
 import { JS_DIR } from '../../tools/paths.ts';
 
@@ -65,7 +68,52 @@ test('buildDataset drops fallback values and keeps real ones', () => {
   const rows = buildDataset(ctx, spec!);
   expect(rows.length).toBe(61);
   expect(rows[0]).toMatchObject({ ID: 'Tal1', Name: 'Fliegen', SF: 'B' });
-  for (const row of rows) expect(row).not.toHaveProperty('__fallback');
+});
+
+test('buildDataset drops a field whose raw value equals the unknown-key fallback sentinel', () => {
+  // A deterministic, isolated stand-in for the real *GetInfo functions' "unknown key
+  // returns the collection size" convention (see the VT201/AP trap above), so this
+  // exercises buildDataset's `value === spec.count` guard directly instead of relying on
+  // real PDF data happening to contain such a row (previously asserted via
+  // `not.toHaveProperty('__fallback')` - a property nothing ever sets, so that check was
+  // vacuously true no matter what buildDataset did).
+  const mockCtx: RulesContext = {
+    failed: [],
+    call: (_fnName: string, ...args: Array<string | number>): unknown => {
+      const [i, field] = args;
+      if (field === 'Fallback') return 3; // equals the mock spec's count below
+      if (field === 'Real') return `wert-${i}`;
+      return '';
+    },
+  };
+  const spec: DatasetSpec = { key: 'mock', fn: 'MockGetInfo', count: 3, fields: ['Real', 'Fallback'] };
+  const rows = buildDataset(mockCtx, spec);
+  expect(rows.length).toBe(3);
+  for (const row of rows) {
+    expect(row).toHaveProperty('Real');
+    expect(row).not.toHaveProperty('Fallback');
+  }
+});
+
+test('suppressionCounts reports broken lookups and unknown-key fallback collisions', () => {
+  const mockCtx: RulesContext = {
+    failed: [],
+    call: (_fnName: string, ...args: Array<string | number>): unknown => {
+      const [, field] = args;
+      if (field === 'Broken') throw new Error('this field always throws');
+      if (field === 'Fallback') return 2; // equals the mock spec's count below
+      return `wert`;
+    },
+  };
+  const spec: DatasetSpec = {
+    key: 'mock', fn: 'MockGetInfo', count: 2, fields: ['Real', 'Broken', 'Fallback'],
+  };
+  resetSuppressionCounts();
+  buildDataset(mockCtx, spec);
+  const counts = suppressionCounts();
+  // one row per index (1..2), each hits both the broken lookup and the fallback collision
+  expect(counts.brokenLookups).toBe(2);
+  expect(counts.fallbackCollisions).toBe(2);
 });
 
 // --- Ruling R9: legacy mojibake normalisation ---

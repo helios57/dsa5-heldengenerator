@@ -1,4 +1,4 @@
-import { latin1, isDict, isArray, isName, isPdfString } from './pdf-lexer.ts';
+import { latin1, isArray, isName, isPdfString } from './pdf-lexer.ts';
 import type { PdfDict, PdfObject, PdfValue } from './pdf-lexer.ts';
 import type { PDFDoc } from './pdf-document.ts';
 

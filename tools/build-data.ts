@@ -120,6 +120,30 @@ function normalisiereProbe(row: Record<string, unknown>): void {
   }
 }
 
+/**
+ * `buildDataset` silently `continue`s past two kinds of suppressed data: a lookup that
+ * threw (`catch { continue }` — the field genuinely isn't valid for that function, e.g.
+ * calling a spezies-only field on a talent), and a value that collided with the
+ * unknown-key fallback sentinel (`value === spec.count`, see the `eigenschaften` DATASETS
+ * comment above for a worked example of that trap). Both are legitimate to suppress on a
+ * per-field basis, but a build where suppressions spike silently would be easy to miss —
+ * these counters make them visible via `suppressionCounts()` / the summary line `main()`
+ * prints. Module-level (not per-call) so `main()` can report one total across every
+ * dataset; `resetSuppressionCounts()` exists so callers (tests, `main()`) can measure a
+ * clean window.
+ */
+let brokenLookups = 0;
+let fallbackCollisions = 0;
+
+export function resetSuppressionCounts(): void {
+  brokenLookups = 0;
+  fallbackCollisions = 0;
+}
+
+export function suppressionCounts(): { brokenLookups: number; fallbackCollisions: number } {
+  return { brokenLookups, fallbackCollisions };
+}
+
 export function buildDataset(ctx: RulesContext, spec: DatasetSpec): Array<Record<string, unknown>> {
   const rows: Array<Record<string, unknown>> = [];
   const seen = new Set<string>();
@@ -133,10 +157,14 @@ export function buildDataset(ctx: RulesContext, spec: DatasetSpec): Array<Record
       try {
         value = ctx.call(spec.fn, i, field);
       } catch {
+        brokenLookups++;
         continue;
       }
       // A *GetInfo call that returns the collection size means "unknown key".
-      if (value === spec.count) continue;
+      if (value === spec.count) {
+        fallbackCollisions++;
+        continue;
+      }
       if (isEmpty(value)) continue;
       row[field] = value;
       usable = true;
@@ -160,6 +188,7 @@ async function main(): Promise<void> {
     console.warn(`note: ${ctx.failed.length} scripts did not load (UI-only, expected)`);
   }
   await mkdir(DATA_DIR, { recursive: true });
+  resetSuppressionCounts();
   let total = 0;
   for (const spec of DATASETS) {
     const rows = buildDataset(ctx, spec);
@@ -171,6 +200,11 @@ async function main(): Promise<void> {
     );
   }
   console.log(`total ${(total / 1024 / 1024).toFixed(2)} MB`);
+  const { brokenLookups: broken, fallbackCollisions: collisions } = suppressionCounts();
+  console.log(
+    `suppressions: ${broken} broken lookup(s) (caught exceptions), ` +
+    `${collisions} unknown-key fallback collision(s) dropped`,
+  );
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) await main();
