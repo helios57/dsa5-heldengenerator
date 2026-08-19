@@ -94,6 +94,19 @@ export function pruefeVorNachteile(
   return problems;
 }
 
+/**
+ * Ruling R13: MUST be called with the **gekaufte** (purchased) attribute values, not
+ * final ones. The Erfahrungsgrad caps (`maxEigenschaft`, `maxEigenschaftspunkte`) apply
+ * to what was bought during creation; species modifiers are applied afterwards, and a
+ * final sheet value may legitimately exceed the cap.
+ *
+ * Verified against a real Auelfin sheet on *Erfahren* (cap 14): she shows IN 15, because
+ * Elfen grant IN +1. Purchased was IN 14 — exactly at the cap — so she is fully legal.
+ * A caller that passes final values instead would reject her as a rule violation.
+ *
+ * The character model must keep purchased and final attribute values separate: display
+ * the final value, but validate the purchased one.
+ */
 export function pruefeEigenschaften(
   { eigenschaften, grad }: { eigenschaften: Eigenschaften; grad: string },
 ): Problem[] {
