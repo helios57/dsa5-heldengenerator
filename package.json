@@ -1,0 +1,22 @@
+{
+  "name": "dsa5-heldengenerator",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=24" },
+  "scripts": {
+    "build": "tsc -p tsconfig.app.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "serve": "node scripts/serve.ts",
+    "dev": "npm run build && npm run serve",
+    "test": "playwright test",
+    "test:unit": "playwright test --project=unit",
+    "test:e2e": "playwright test --project=e2e",
+    "build:data": "node tools/pdf-js-extract.ts && node tools/build-data.ts"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.62.1",
+    "@types/node": "^24.0.0",
+    "typescript": "^6.0.3"
+  }
+}
