@@ -4,3 +4,12 @@ app/js/
 test-results/
 playwright-report/
 .superpowers/
+
+# Personal filled character sheets - never publish these
+Charakterbogen_*.pdf
+!423187-Charakterbogen_V2_13_*.pdf
+
+# Personal character exports and write-ups kept in the repo root.
+# The blank official template above is tracked; generated characters are not.
+/Xardas.json
+/Xardas.md

@@ -28,8 +28,20 @@ als JSON abgelegt. Die Regelgrenzen sind zusätzlich gegen das
 [Ulisses Regel-Wiki](https://dsa.ulisses-regelwiki.de/) belegt — siehe die
 Quellentabelle in der [Spezifikation](docs/superpowers/specs/2026-08-19-dsa5-heldengenerator-design.md).
 
-*Das Schwarze Auge* ist eine Marke der Ulisses Spiele GmbH. Dieses Projekt ist
-ein inoffizielles Hilfsmittel ohne Verbindung zum Verlag.
+## Rechtliches
+
+*Das Schwarze Auge* ist eine Marke der **Ulisses Spiele GmbH**. Sämtliche Regeln,
+Texte, Namen und Daten von DSA sind Eigentum von Ulisses Spiele und deren
+Lizenzgebern. Dieses Projekt ist ein **inoffizielles, nicht-kommerzielles
+Hilfsmittel** ohne Verbindung zum Verlag und ohne Anspruch auf Vollständigkeit
+oder Richtigkeit.
+
+Das enthaltene Heldendokument (`423187-Charakterbogen_V2_13`) ist ein kostenloser
+offizieller Download von Ulisses Spiele und liegt hier unverändert bei; die
+Datensätze unter `app/data/` sind daraus abgeleitet. Der **Quellcode** steht unter
+der MIT-Lizenz (siehe [LICENSE](LICENSE)) — die Spielinhalte ausdrücklich nicht.
+
+Auf Wunsch der Rechteinhaber wird das Repository entsprechend angepasst.
 
 ## Entwicklung
 
