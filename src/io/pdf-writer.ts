@@ -20,6 +20,9 @@ export type FeldWerte = ReadonlyMap<string, string>;
 
 const MIN_FONT_SIZE = 4;
 const MAX_FONT_SIZE = 24;
+// Auto-sized multiline fields stop here rather than at MAX_FONT_SIZE; see the note in
+// autoFontSize for why the two bounds differ.
+const MAX_MULTILINE_FONT_SIZE = 12;
 const PAD_X = 2; // total horizontal inset (both sides combined) subtracted when fitting text
 const PAD_Y = 2; // total vertical inset (both sides combined) subtracted when fitting text
 // Used only when a font has no /FontDescriptor (e.g. the undecorated base-14 entries in this
@@ -266,14 +269,20 @@ function pickFontSize(
   // Multiline auto-size: start from a one-line upper bound, then shrink to fit however many
   // lines the greedy wrap actually needs at that size. A handful of iterations converges in
   // practice; this is a fit heuristic, not a claim of matching Acrobat's own algorithm.
-  let size = clamp(availH / lineHeightEm, MIN_FONT_SIZE, MAX_FONT_SIZE);
+  //
+  // The upper bound is MAX_MULTILINE_FONT_SIZE, not MAX_FONT_SIZE: a multiline box is tall by
+  // design, so sizing to its height alone lets a short value balloon to fill it. Acrobat caps
+  // auto-sized multiline text at 12pt instead, which is what a reader sees in a sheet saved
+  // from it - every regenerated multiline appearance in the reference document (Held_Vorteile
+  // in a 121.9pt box, Held_Nachteile in 151.4pt, Held_SF_allgemein in 154.2pt) is exactly 12pt.
+  let size = clamp(availH / lineHeightEm, MIN_FONT_SIZE, MAX_MULTILINE_FONT_SIZE);
   for (let i = 0; i < 6; i++) {
     const lines = wrapLines(text, size, availW, metrics);
     const neededH = lines.length * lineHeightEm * size;
     if (neededH <= availH || size <= MIN_FONT_SIZE) break;
     size = Math.max(MIN_FONT_SIZE, availH / (lines.length * lineHeightEm));
   }
-  return clamp(size, MIN_FONT_SIZE, MAX_FONT_SIZE);
+  return clamp(size, MIN_FONT_SIZE, MAX_MULTILINE_FONT_SIZE);
 }
 
 function alignX(text: string, size: number, boxW: number, metrics: FontMetrics, q: number): number {

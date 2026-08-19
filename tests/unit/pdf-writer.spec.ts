@@ -102,3 +102,33 @@ test('the generated appearance content for Held_Name is real: a Tj with the writ
   expect(text).toContain('Tj');
   expect(text).toContain('Grimmbart Söhnlein');
 });
+
+test('auto-sized multiline fields stop at 12pt instead of filling their tall box', async () => {
+  // Held_Vorteile is a 121.9pt-tall multiline field with `0 Tf` (auto-size). Sizing purely to
+  // the box height would pick ~24pt and spill the text past the box; Acrobat caps auto-sized
+  // multiline text at 12pt. Every multiline appearance Acrobat regenerated in the reference
+  // sheet is exactly 12pt, so that is the number to match.
+  const werte = new Map([['Held_Vorteile', 'Zauberer / Glück I / Eisern']]);
+  const bytes = new Uint8Array(await readFile(SOURCE_PDF));
+  const docML = await PDFDoc.load(bytes);
+  const fieldsML = await readAcroFields(docML);
+  const written = await schreibeFormular(bytes, docML, fieldsML, werte);
+
+  const doc2 = await PDFDoc.load(written);
+  const fields2 = await readAcroFields(doc2);
+  const feld = fields2.get('Held_Vorteile');
+  expect(feld).toBeDefined();
+
+  const ap = await doc2.resolveDict(feld!.widgets[0]!.dict.get('AP'));
+  const n = ap!.get('N');
+  expect(isRef(n)).toBe(true);
+  if (!isRef(n)) return;
+  const stream = await doc2.resolve(n);
+  expect(isStream(stream)).toBe(true);
+  if (!isStream(stream)) return;
+
+  const text = latin1(await doc2.streamData(stream));
+  const tf = /\/\S+\s+([\d.]+)\s+Tf/.exec(text);
+  expect(tf).not.toBeNull();
+  expect(Number(tf![1])).toBeCloseTo(12, 5);
+});
