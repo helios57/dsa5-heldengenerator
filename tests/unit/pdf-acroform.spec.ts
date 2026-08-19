@@ -66,3 +66,33 @@ test('decodeText handles UTF-16BE with BOM and latin1', () => {
   expect(decodeText(new Uint8Array([0xfe, 0xff, 0x00, 0x41, 0x00, 0x42]))).toBe('AB');
   expect(decodeText(new Uint8Array([0x41, 0x42]))).toBe('AB');
 });
+
+test('a Kids cycle is skipped cleanly, without hanging, keeping the non-cyclic fields', async () => {
+  // The cyclic walk itself runs in a worker thread (pdf-acroform.cycle-worker.ts),
+  // not on this test's own event loop - see that file for why an in-process
+  // Promise.race/setTimeout guard cannot be trusted to fire on this specific
+  // failure mode. worker.terminate() from this (unaffected) event loop is the
+  // guard that actually bounds the test.
+  const { Worker } = await import('node:worker_threads');
+  const workerUrl = new URL('./pdf-acroform.cycle-worker.ts', import.meta.url);
+  const worker = new Worker(workerUrl);
+
+  type Outcome = { ok: boolean; size?: number; hasC?: boolean; error?: string };
+  const result = await new Promise<Outcome | 'timed-out'>((res) => {
+    const timer = setTimeout(() => res('timed-out'), 4000);
+    worker.once('message', (m: Outcome) => {
+      clearTimeout(timer);
+      res(m);
+    });
+    worker.once('error', (e: Error) => {
+      clearTimeout(timer);
+      res({ ok: false, error: String(e) });
+    });
+  });
+  await worker.terminate();
+
+  expect(result).not.toBe('timed-out');
+  const outcome = result as Outcome;
+  expect(outcome.ok).toBe(true);
+  expect(outcome.hasC).toBe(true);
+});

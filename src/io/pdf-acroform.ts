@@ -26,6 +26,11 @@ const refOf = (value: PdfValue): number | null =>
     ? (value as { ref: number }).ref
     : null;
 
+// Secondary guard against a pathologically deep (but acyclic) field tree. The
+// real document nests at most a few levels (e.g. AEAnzeige.RTF.FontSize), so
+// this is far beyond any legitimate depth while still bounding the walk.
+const MAX_DEPTH = 64;
+
 export async function readAcroFields(doc: PDFDoc): Promise<Map<string, FieldInfo>> {
   const root = await doc.resolveDict(doc.trailer.get('Root'));
   if (!root) throw new Error('document has no catalog');
@@ -36,7 +41,23 @@ export async function readAcroFields(doc: PDFDoc): Promise<Map<string, FieldInfo
 
   const out = new Map<string, FieldInfo>();
 
-  const walk = async (reference: PdfValue, prefix: string): Promise<void> => {
+  // `ancestors` holds the object numbers on the path from the tree root down
+  // to (but not including) the node about to be visited. It is per-branch,
+  // not global: a legitimately repeated object elsewhere in the tree (same
+  // ref reachable via two different paths) must still be walked, so a global
+  // "seen" set would silently drop real fields. Only a true structural cycle
+  // in /Kids - a node reachable from itself - gets skipped.
+  const walk = async (
+    reference: PdfValue,
+    prefix: string,
+    ancestors: ReadonlySet<number>,
+    depth: number,
+  ): Promise<void> => {
+    if (depth > MAX_DEPTH) return;
+
+    const nodeRef = refOf(reference);
+    if (nodeRef !== null && ancestors.has(nodeRef)) return; // cycle in Kids; skip cleanly, don't throw
+
     const dict = await doc.resolveDict(reference as PdfObject);
     if (!dict) return;
 
@@ -70,10 +91,11 @@ export async function readAcroFields(doc: PDFDoc): Promise<Map<string, FieldInfo
       });
     }
 
-    for (const kid of namedKids) await walk(kid.reference, name);
+    const nextAncestors = nodeRef === null ? ancestors : new Set(ancestors).add(nodeRef);
+    for (const kid of namedKids) await walk(kid.reference, name, nextAncestors, depth + 1);
   };
 
-  for (const field of roots) await walk(field, '');
+  for (const field of roots) await walk(field, '', new Set(), 0);
   return out;
 }
 
@@ -84,6 +106,14 @@ export async function fieldValue(doc: PDFDoc, field: FieldInfo | undefined): Pro
   if (isPdfString(v)) return decodeText(v.str);
   if (isName(v)) return v.name;
   if (typeof v === 'number') return String(v);
-  if (isDict(v)) return '';
+  if (isArray(v)) {
+    // Multi-select list boxes carry /V as an array of strings/names. Join
+    // the decoded entries rather than silently dropping them; callers that
+    // need the individual selections can still read field.dict.get('V').
+    return v
+      .map((entry) => (isPdfString(entry) ? decodeText(entry.str) : isName(entry) ? entry.name : ''))
+      .filter((s) => s.length > 0)
+      .join('; ');
+  }
   return '';
 }
