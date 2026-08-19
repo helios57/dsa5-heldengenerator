@@ -13,3 +13,9 @@ Charakterbogen_*.pdf
 # The blank official template above is tracked; generated characters are not.
 /Xardas.json
 /Xardas.md
+
+# agent worktrees
+.claude/
+
+# writer test artefacts
+*_korrigiert.pdf
