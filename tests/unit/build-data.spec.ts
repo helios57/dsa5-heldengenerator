@@ -118,6 +118,7 @@ test('every dataset yields the documented row count (regression guard for the ze
     liturgien: 350,
     sprachen: 102,
     traditionen: 62,
+    eigenschaften: 8,
   };
   for (const spec of DATASETS) {
     const rows = buildDataset(ctx, spec);
@@ -173,5 +174,43 @@ test('a known species (S36) resolves to its official plural name', () => {
   const rows = buildDataset(ctx, spec!);
   const s36 = rows.find((r) => r['ID'] === 'S36');
   expect(s36).toMatchObject({ 'Name Plural': 'Achaz' });
+});
+
+// --- eigenschaften: the only mapping from Eig1..Eig8 to MU/KL/... and to spezies.EW keys ---
+
+test('eigenschaften maps all eight attributes in sheet order, including the last (KK)', () => {
+  const spec = DATASETS.find((d) => d.key === 'eigenschaften');
+  expect(spec).toBeDefined();
+  const rows = buildDataset(ctx, spec!);
+  expect(rows.map((r) => r['Kurz'])).toEqual(['MU', 'KL', 'IN', 'CH', 'FF', 'GE', 'KO', 'KK']);
+  expect(rows.map((r) => r['ID'])).toEqual(
+    ['Eig1', 'Eig2', 'Eig3', 'Eig4', 'Eig5', 'Eig6', 'Eig7', 'Eig8'],
+  );
+  // Regression guard for the 'Nr'/unknown-key collision documented in DATASETS: the last row
+  // (KK) must still be present and complete even though its raw Nr (7) equals this dataset's
+  // unknown-pWas fallback (also 7) - 'Nr' is excluded from the field list specifically to
+  // avoid that trap, and this asserts nothing else about the row went missing as a result.
+  const kk = rows.find((r) => r['ID'] === 'Eig8');
+  expect(kk).toEqual({ ID: 'Eig8', Kurz: 'KK', Lang: 'Körperkraft', Opt_ID: '8' });
+});
+
+// --- Ruling R14: VorteilGetInfo/NachteilGetInfo 'Liste' depends on a global "which
+// sourcebooks are enabled" filter field (WerkFilter -> getField('GlobFiltWerkeAuswahl')).
+// An inert stub field always reports numItems: 0, so every *Array() helper behind 'Liste'
+// silently returned [] instead of throwing. The shim now overrides WerkFilter to mean
+// "every sourcebook enabled" so real option labels come through.
+
+test('VorteilGetInfo Liste resolves real sub-option labels, not an empty array', () => {
+  // VT227 "Zusätzliche Gliedmaßen" is exactly the case spezies rows reference via the
+  // "VT227_1" sub-option code (see spezies.Vorteil, e.g. S36 -> [["VT227","VT227_1"]]).
+  expect(ctx.call('VorteilGetInfo', 'VT227', 'Liste')).toEqual(['Schwanz']);
+});
+
+test('the generated vorteile dataset carries a non-empty Liste for VT227', () => {
+  const spec = DATASETS.find((d) => d.key === 'vorteile');
+  expect(spec).toBeDefined();
+  const rows = buildDataset(ctx, spec!);
+  const vt227 = rows.find((r) => r['ID'] === 'VT227');
+  expect(vt227).toMatchObject({ Liste: ['Schwanz'] });
 });
 

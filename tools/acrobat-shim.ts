@@ -81,6 +81,42 @@ export function createRulesContext(scriptDir: string): RulesContext {
     }
   }
 
+  /**
+   * Ruling R14: several `*Array()` helpers reached through e.g. `VorteilGetInfo(id, 'Liste')`
+   * filter their static option list against `WerkFilter()`, which reads
+   * `this.getField('GlobFiltWerkeAuswahl')` — the PDF's "which sourcebooks are enabled"
+   * listbox. An inert stub field has `numItems: 0`, so `WerkFilter()` always returns `[]`;
+   * every `*Array()` helper's book-filter check then never matches, and the option list comes
+   * back empty rather than throwing — silently, not loudly.
+   * Verified: `VorteilGetInfo('VT227', 'Liste')` (the sub-options for "Zusätzliche
+   * Gliedmaßen", e.g. the "VT227_1" code referenced by `spezies.Vorteil` rows) extracted as
+   * `[]` before this override, even though real option labels exist.
+   * `WerkGetInfo` enumerates every official sourcebook (191 entries, 0..190, its own
+   * zeroBased-style unknown-key fallback). For a data export we want every book's content
+   * regardless of any one reader's filter selection, so `WerkFilter` is overridden here to
+   * mean "every sourcebook enabled" — the same effect as ticking every box in that listbox.
+   * After the override, `VorteilGetInfo('VT227', 'Liste')` resolves to `['Schwanz']`.
+   */
+  try {
+    vm.runInContext(
+      `WerkFilter = function () {
+        var maxIdx = WerkGetInfo('', '');
+        var out = [];
+        for (var i = 0; i <= maxIdx; i++) {
+          var kuerzel = WerkGetInfo(i, 'Kürzel');
+          if (kuerzel) out.push(kuerzel);
+        }
+        return out;
+      };`,
+      context,
+    );
+  } catch (error) {
+    failed.push({
+      file: 'WerkFilter (override)',
+      message: error instanceof Error ? error.message : String(error),
+    });
+  }
+
   return {
     failed,
     call(fnName: string, ...args: Array<string | number>): unknown {

@@ -18,25 +18,44 @@ export const DATASETS: readonly DatasetSpec[] = [
   { key: 'spezies', fn: 'SpeziesGetInfo', count: 46, zeroBased: true,
     fields: ['ID', 'Name Plural', 'Name männlich', 'Name weiblich', 'Name divers',
              'Gesamt', 'AP', 'LE', 'SK', 'ZK', 'GS', 'EW',
-             'Kulturen', 'Vorteil', 'Nachteil', 'Größe', 'Gewicht', 'Alter', 'Werke'] },
+             'Kulturen', 'Vorteil', 'Nachteil', 'Größe', 'Gewicht', 'Alter', 'Werke',
+             'Haartyp'] },
   { key: 'kulturen', fn: 'KulturGetInfo', count: 56, zeroBased: true,
     fields: ['ID', 'Name Plural', 'Gesamt', 'SFAllgemein', 'Sprache', 'Talent', 'Typ', 'Werke'] },
   { key: 'professionen', fn: 'ProfessionGetInfo', count: 951, zeroBased: true,
-    fields: ['Name divers', 'Name männlich', 'Name weiblich', 'Gesamt', 'Typ', 'Werke'] },
+    fields: ['Name divers', 'Name männlich', 'Name weiblich', 'Gesamt', 'Typ', 'Werke',
+             'Talent', 'Kampftechnik', 'Kampftechnik-Tausch', 'Zauber', 'Liturgie', 'Segen',
+             'SFAllgemein', 'SFKampf', 'SFMagie', 'SFKarma', 'Sprache', 'Schrift',
+             'Vorteil', 'Nachteil', 'EWMin', 'LeitMagie', 'LeitKarma', 'Info'] },
   { key: 'vorteile', fn: 'VorteilGetInfo', count: 234, zeroBased: true,
-    fields: ['ID', 'Name divers', 'BasisKosten', 'Regel', 'Typ', 'Verweise', 'Werke'] },
+    fields: ['ID', 'Name divers', 'BasisKosten', 'Regel', 'Typ', 'Verweise', 'Werke', 'Liste'] },
   { key: 'nachteile', fn: 'NachteilGetInfo', count: 161, zeroBased: true,
-    fields: ['ID', 'Name divers', 'BasisKosten', 'Regel', 'Typ', 'Verweise', 'Werke'] },
+    fields: ['ID', 'Name divers', 'BasisKosten', 'Regel', 'Typ', 'Verweise', 'Werke', 'Liste'] },
   { key: 'kampftechniken', fn: 'KampftechnikGetInfo', count: 22,
-    fields: ['Name', 'Typ', 'SF', 'Werke'] },
+    fields: ['Name', 'Typ', 'SF', 'Werke', 'Leit', 'AT', 'PA1', 'PA2', 'Nummer'] },
   { key: 'zauber', fn: 'ZauberGetInfo', count: 856, zeroBased: true,
-    fields: ['ID', 'Name', 'Probe', 'SF', 'Merkmal', 'Werke'] },
+    fields: ['ID', 'Name', 'Probe', 'SF', 'Merkmal', 'Werke', 'Traditionen', 'Probe1', 'Probe2', 'Probe3'] },
   { key: 'liturgien', fn: 'LiturgieGetInfo', count: 349, zeroBased: true,
-    fields: ['ID', 'Name', 'Probe', 'SF', 'Werke'] },
+    fields: ['ID', 'Name', 'Probe', 'SF', 'Werke', 'Traditionen', 'Probe1', 'Probe2', 'Probe3'] },
   { key: 'sprachen', fn: 'SpracheGetInfo', count: 101, zeroBased: true,
-    fields: ['Name', 'Werke'] },
+    fields: ['Name', 'Werke', 'Max', 'Gruppe', 'Schrift'] },
   { key: 'traditionen', fn: 'TraditionGetInfo', count: 61, zeroBased: true,
-    fields: ['Name', 'Werke'] },
+    fields: ['Name', 'Werke', 'Leit', 'Faktor', 'Kosten', 'Kurz'] },
+  // EigenschaftGetInfo(0..7, pWas) is the only mapping from Eig1..Eig8 (used as keys inside
+  // e.g. spezies.EW, [["Eig3",1],...]) to both the sheet's attribute abbreviations (Kurz:
+  // MU/KL/IN/CH/FF/GE/KO/KK) and their full PDF field labels (Lang: Mut/Klugheit/...).
+  // Deliberately excludes 'Nr' and 'Feld':
+  //  - 'Nr' is the same 0-7 index as the zeroBased loop position, AND for the last entry
+  //    (i=7, KK) its legitimate value is literally 7 - identical to this dataset's
+  //    unknown-pWas fallback (also 7, verified: EigenschaftGetInfo(i,'Bogus') === 7 for every
+  //    i). buildDataset's `value === spec.count` heuristic would silently drop that one
+  //    genuine value, so 'Nr' is left out rather than risk it (it's redundant with the row
+  //    order anyway).
+  //  - 'Feld' calls this.getField(...) and returns a Field object, not serialisable data; our
+  //    shim's stub getField() also can't distinguish which field name was requested, so every
+  //    row would collapse to the same empty stub.
+  { key: 'eigenschaften', fn: 'EigenschaftGetInfo', count: 7, zeroBased: true,
+    fields: ['ID', 'Kurz', 'Lang', 'Opt_ID'] },
 ];
 
 const isEmpty = (v: unknown): boolean =>
