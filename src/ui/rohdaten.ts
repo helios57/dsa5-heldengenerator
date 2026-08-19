@@ -65,3 +65,15 @@ export function findeZeile(
 export function summeGesamt(gesamt: string): number {
   return gesamt.split('+').reduce((summe, teil) => summe + Number(teil), 0);
 }
+
+/**
+ * Liest ein Feld, das eine Zahl im deutschen Komma-Format trägt (z. B. `app/data/ausruestung.json`s
+ * `Wert`/`Gewicht`: `"0,5"`, `"1,2"`). Fehlt das Feld oder ist es kein Text, liefert 0 statt zu werfen
+ * — dieselbe "defensiv statt strikt" Haltung wie die übrigen `feld*`-Helfer in dieser Datei.
+ */
+export function feldKommaZahl(zeile: DatensatzZeile, feld: string): number {
+  const wert = zeile[feld];
+  if (typeof wert !== 'string') return 0;
+  const zahl = Number(wert.replace(',', '.'));
+  return Number.isFinite(zahl) ? zahl : 0;
+}

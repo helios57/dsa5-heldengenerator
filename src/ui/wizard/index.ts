@@ -56,6 +56,11 @@ import { schrittKonzept } from './steps/konzept.ts';
 import { schrittSpezies } from './steps/spezies.ts';
 import { schrittKultur } from './steps/kultur.ts';
 import { schrittEigenschaften } from './steps/eigenschaften.ts';
+import { schrittSonderfertigkeiten } from './steps/sonderfertigkeiten.ts';
+import { schrittMagieKarma } from './steps/magieKarma.ts';
+import { schrittAusruestung } from './steps/ausruestung.ts';
+import { schrittDetails } from './steps/details.ts';
+import { schrittAbschluss } from './steps/abschluss.ts';
 import type { Schritt, SchrittKontext } from './types.ts';
 import type { Store } from '../../state/store.ts';
 import type { DatenIndex } from '../../core/apkonto.ts';
@@ -65,6 +70,11 @@ export const SCHRITTE: readonly Schritt[] = [
   schrittSpezies,
   schrittKultur,
   schrittEigenschaften,
+  schrittSonderfertigkeiten,
+  schrittMagieKarma,
+  schrittAusruestung,
+  schrittDetails,
+  schrittAbschluss,
 ];
 
 export type WizardElemente = {
