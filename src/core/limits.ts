@@ -1,6 +1,7 @@
 /** Erschaffungsgrenzen nach DSA5. Quelle: Regel-Wiki (Spec §5.1–5.4, §5.7). */
 import { erfahrungsgrad } from './experience.ts';
 import type { Erfahrungsgrad } from './experience.ts';
+import { EIGENSCHAFTEN } from './derived.ts';
 import type { Eigenschaften, EigenschaftName, Limit, Problem, ProblemCode } from './types.ts';
 
 export const MAX_VORTEIL_AP = 80 as const;
@@ -27,7 +28,13 @@ function gradOrThrow(grad: string): Erfahrungsgrad {
   return g;
 }
 
-/** Die niedrigere Schranke gewinnt; `grund` benennt die greifende. */
+/**
+ * Die niedrigere Schranke gewinnt; `grund` benennt die greifende.
+ * Bei exaktem Gleichstand gewinnt der ERSTE Kandidat (strikt `<`, nicht `<=`), sodass
+ * Gleichstände in der Aufrufreihenfolge der Kandidaten-Arrays entschieden werden — das
+ * ist beabsichtigt (eigenschaftsbasierte Gründe sind für die UI griffiger) und darf bei
+ * einem künftigen Refactor nicht stillschweigend umgedreht werden.
+ */
 function kleinere(kandidaten: readonly Limit[]): Limit {
   return kandidaten.reduce((best, c) => (c.wert < best.wert ? c : best));
 }
@@ -94,7 +101,18 @@ export function pruefeEigenschaften(
   const problems: Problem[] = [];
   let summe = 0;
 
-  for (const [name, wert] of Object.entries(eigenschaften) as Array<[EigenschaftName, number]>) {
+  // Iterate the canonical attribute list, not `Object.entries(eigenschaften)`: a
+  // caller may pass a partial/corrupted object (e.g. recovered autosave state), and
+  // `Object.entries` would silently visit only the keys that happen to be present —
+  // missing attributes would be skipped entirely rather than reported, and the point
+  // total would be understated instead of flagged as suspect.
+  for (const name of EIGENSCHAFTEN) {
+    const wert = eigenschaften[name];
+    if (!Number.isFinite(wert)) {
+      problems.push(problem('eigenschaft-fehlt', name,
+        `${name} fehlt oder ist kein gültiger Wert.`, Number.NaN, EIGENSCHAFT_MIN));
+      continue;
+    }
     summe += wert;
     if (wert < EIGENSCHAFT_MIN) {
       problems.push(problem('eigenschaft-min', name,

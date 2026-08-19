@@ -16,7 +16,7 @@ export type Limit = { readonly wert: number; readonly grund: LimitGrund };
 
 export type ProblemCode =
   | 'vorteil-ap' | 'nachteil-ap'
-  | 'eigenschaft-min' | 'eigenschaft-max' | 'eigenschaftspunkte'
+  | 'eigenschaft-min' | 'eigenschaft-max' | 'eigenschaftspunkte' | 'eigenschaft-fehlt'
   | 'rest-ap' | 'ap-ueberzogen';
 
 export type Problem = {

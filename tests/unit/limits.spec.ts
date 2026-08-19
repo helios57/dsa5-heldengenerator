@@ -69,6 +69,33 @@ test('attributes must stay within range and respect the point total', () => {
     .toMatchObject({ ist: 107, erlaubt: 100 });
 });
 
+test('a partial object is reported via eigenschaft-fehlt, not silently certified as valid', () => {
+  const partial = { MU: 12, KL: 13 } as unknown as Eigenschaften;
+  const problems = pruefeEigenschaften({ eigenschaften: partial, grad: 'Erfahren' });
+  expect(problems).not.toEqual([]);
+  expect(problems.map((p) => p.code)).toEqual(
+    problems.map(() => 'eigenschaft-fehlt'),
+  );
+  // one problem per missing attribute (all six besides MU and KL)
+  expect(problems.filter((p) => p.code === 'eigenschaft-fehlt').map((p) => p.feld).sort())
+    .toEqual(['CH', 'FF', 'GE', 'KK', 'KO', 'IN'].sort());
+});
+
+test('a complete, valid object still yields no problems', () => {
+  const ok: Eigenschaften = { MU: 14, KL: 14, IN: 14, CH: 12, FF: 12, GE: 12, KO: 12, KK: 10 };
+  expect(pruefeEigenschaften({ eigenschaften: ok, grad: 'Erfahren' })).toEqual([]);
+});
+
+test('a non-finite attribute value is reported, not silently summed', () => {
+  const withNaN = {
+    MU: 14, KL: 14, IN: 14, CH: 12, FF: 12, GE: 12, KO: 12, KK: Number.NaN,
+  } as Eigenschaften;
+  const problems = pruefeEigenschaften({ eigenschaften: withNaN, grad: 'Erfahren' });
+  expect(problems.map((p) => p.code)).toContain('eigenschaft-fehlt');
+  const kk = problems.find((p) => p.feld === 'KK');
+  expect(kk).toMatchObject({ code: 'eigenschaft-fehlt' });
+});
+
 test('at most ten AP may be carried over, and never a negative balance', () => {
   expect(pruefeRestAP({ budget: 1100, ausgegeben: 1095 })).toEqual([]);
   expect(pruefeRestAP({ budget: 1100, ausgegeben: 1100 })).toEqual([]);
