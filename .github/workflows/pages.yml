@@ -27,6 +27,16 @@ jobs:
 
       - run: npm ci
 
+      # build/ (extracted Acrobat JS) is gitignored intermediate output, not checked
+      # in. tests/unit/build-data.spec.ts loads build/js via createRulesContext(JS_DIR),
+      # so without this step a clean CI checkout fails with ENOENT before a single
+      # assertion runs. Also regenerates app/data/*.json, which must stay byte-identical
+      # to what's committed (verified locally; not re-diffed here to keep CI simple).
+      # Must precede `npm test` and anything else that reads app/data.
+      # Takes roughly a minute.
+      - name: Generate rules data from the source PDF
+        run: npm run build:data
+
       - name: Typecheck
         run: npm run typecheck
 
