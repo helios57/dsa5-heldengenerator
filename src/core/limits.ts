@@ -19,8 +19,32 @@ const problem = (
   code: ProblemCode, feld: string | null, text: string, ist: number, erlaubt: number,
 ): Problem => ({ code, feld, text, ist, erlaubt });
 
-const hoechste = (namen: readonly EigenschaftName[], e: Eigenschaften): number =>
-  namen.reduce((max, n) => Math.max(max, e[n]), 0);
+/**
+ * Report, don't coerce (same discipline as `pruefeEigenschaften` and costs.ts's `endlich`):
+ * a missing/non-finite attribute or an empty `namen` list is corrupt caller state, not a
+ * legitimate "no constraint". The previous version folded with a 0 seed and no validation,
+ * so `e[n]` being `undefined` (a partial/corrupted `Eigenschaften` object; the type says
+ * `number` but doesn't guarantee it at runtime) produced `Math.max(max, undefined) = NaN`
+ * silently. `kleinere()`'s `c.wert < best.wert` is then always `false` for a `NaN` candidate
+ * (NaN compares false against everything), so the corrupt candidate silently LOSES instead
+ * of the corruption being reported — the Erfahrungsgrad cap wins by default, hiding the bug.
+ * An empty `namen` list previously returned the seed unmodified: `hoechste([], e) === 0`,
+ * so callers got a bogus `wert: 2` ("eigenschaft" cap of 0 + 2) instead of an error.
+ */
+const hoechste = (namen: readonly EigenschaftName[], e: Eigenschaften): number => {
+  if (namen.length === 0) {
+    throw new Error('hoechste() benötigt mindestens eine Eigenschaft, erhielt eine leere Liste.');
+  }
+  let max = -Infinity;
+  for (const n of namen) {
+    const wert = e[n];
+    if (!Number.isFinite(wert)) {
+      throw new Error(`Eigenschaft ${n} fehlt oder ist kein gültiger Wert: ${wert}`);
+    }
+    max = Math.max(max, wert);
+  }
+  return max;
+};
 
 function gradOrThrow(grad: string): Erfahrungsgrad {
   const g = erfahrungsgrad(grad);

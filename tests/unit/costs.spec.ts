@@ -52,3 +52,22 @@ test('energy costs', () => {
   expect(energieKosten(12)).toBe(48);
   expect(energieKosten(13)).toBe(56);
 });
+
+// --- report, don't coerce: a non-finite input is corrupt caller state, not free AP ---
+
+test('a non-finite attribute value is reported, not silently costed as 0 AP', () => {
+  expect(() => eigenschaftKosten(Number.NaN)).toThrow();
+  expect(() => eigenschaftKosten(Number.POSITIVE_INFINITY)).toThrow();
+  // and it must propagate through the array reducer, not get lost in the sum
+  expect(() => eigenschaftKostenGesamt([12, Number.NaN, 10])).toThrow();
+});
+
+test('a non-finite skill value is reported, not silently costed as 0 AP', () => {
+  expect(() => fertigkeitKosten(Number.NaN, 'B')).toThrow();
+  expect(() => fertigkeitKosten(Number.NEGATIVE_INFINITY, 'B')).toThrow();
+});
+
+test('a non-finite energy point value is reported, not silently costed as 0 AP', () => {
+  expect(() => energieKosten(Number.NaN)).toThrow();
+  expect(() => energieKosten(Number.POSITIVE_INFINITY)).toThrow();
+});

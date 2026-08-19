@@ -106,3 +106,17 @@ test('at most ten AP may be carried over, and never a negative balance', () => {
 test('an unknown Erfahrungsgrad is rejected loudly', () => {
   expect(() => maxFertigkeit({ probe: ['KL'], eigenschaften: E, grad: 'Halbgott' })).toThrow();
 });
+
+// --- hoechste(): report, don't coerce (same discipline as pruefeEigenschaften) ---
+
+test('an empty probe/leiteigenschaften list is rejected loudly, not silently treated as a cap of 2', () => {
+  expect(() => maxFertigkeit({ probe: [], eigenschaften: E, grad: 'Erfahren' })).toThrow();
+  expect(() => maxKampftechnik({ leiteigenschaften: [], eigenschaften: E, grad: 'Erfahren' })).toThrow();
+});
+
+test('a missing/non-finite attribute in eigenschaften is rejected, not folded into NaN and silently outrun by the Erfahrungsgrad cap', () => {
+  const korrupt = { ...E, KL: Number.NaN };
+  expect(() => maxFertigkeit({ probe: ['KL'], eigenschaften: korrupt, grad: 'Erfahren' })).toThrow();
+  const partiell = { MU: 12, KL: 13 } as unknown as Eigenschaften;
+  expect(() => maxFertigkeit({ probe: ['IN'], eigenschaften: partiell, grad: 'Erfahren' })).toThrow();
+});
