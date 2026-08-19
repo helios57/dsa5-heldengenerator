@@ -19,11 +19,24 @@ export type RulesContext = {
  * The `*GetInfo` lookup functions never depend on real field values, so an inert stub
  * suffices; scripts that fail to load either aren't valid JS on their own (e.g. HTML
  * fragments) or need Acrobat host features this stub does not provide (e.g. dialogs).
+ *
+ * One field is the exception: `DokumentSprache()` reads the `Sprachversion` field and
+ * falls back to `'DE'` only `if (fFeld != null)` is false — but an inert stub field is
+ * never `null`, so that guard never trips, and the empty-string default value wins
+ * instead of the intended `'DE'` fallback. Several `*GetInfo` lookups (e.g. `IDSpezies`
+ * via `SpeziesGetInfo`'s `Name Plural`) pass that language straight into a `switch` with
+ * no `''` case, so they silently fall through to a numeric/empty default. Named field
+ * defaults below patch specific fields to the value Acrobat would realistically hold;
+ * every other field name keeps the original inert stub.
  */
+const NAMED_FIELD_DEFAULTS: Readonly<Record<string, string>> = {
+  Sprachversion: 'DE',
+};
+
 export function createRulesContext(scriptDir: string): RulesContext {
-  const field = {
-    value: '',
-    valueAsString: '',
+  const makeField = (value: string) => ({
+    value,
+    valueAsString: value,
     numItems: 0,
     display: 0,
     getItemAt: () => '',
@@ -31,7 +44,11 @@ export function createRulesContext(scriptDir: string): RulesContext {
     setAction() {},
     setItems() {},
     clearItems() {},
-  };
+  });
+  const field = makeField('');
+  const namedFields = new Map(
+    Object.entries(NAMED_FIELD_DEFAULTS).map(([name, value]) => [name, makeField(value)]),
+  );
 
   const sandbox: Record<string, unknown> = {
     console, JSON, Math, Date,
@@ -44,7 +61,7 @@ export function createRulesContext(scriptDir: string): RulesContext {
     // These become properties of the vm context's global object, which is what
     // unqualified top-level `this` resolves to inside loaded scripts (see comment
     // above) — so `this.getField(...)` etc. reach these, not a dead `sandbox.this`.
-    getField: () => field,
+    getField: (name: string) => namedFields.get(name) ?? field,
     numFields: 0,
     getNthFieldName: () => '',
     calculate: false,

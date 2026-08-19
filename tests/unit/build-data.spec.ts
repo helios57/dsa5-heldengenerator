@@ -142,3 +142,36 @@ test('no generated dataset contains any legacy mojibake codepoint', () => {
     expect(json, spec.key).not.toContain('');
   }
 });
+
+// --- Ruling R11: `Sprachversion` must resolve to 'DE', or DokumentSprache() breaks ---
+//
+// DokumentSprache() only falls back to 'DE' when `fFeld != null` is false. An inert
+// stub field returned by getField() is never null, so that guard never trips and the
+// stub's empty-string value wins -- DokumentSprache() then returns '' instead of 'DE'.
+// Several *GetInfo lookups (e.g. SpeziesGetInfo's 'Name Plural' via IDSpezies) pass
+// that language straight into a switch with no '' case and silently fall through to a
+// numeric/empty fallback. This regression guard fails against a name-blind shim.
+
+test('DokumentSprache() resolves to DE through the rules context', () => {
+  expect(ctx.call('DokumentSprache')).toBe('DE');
+});
+
+test('the generated spezies dataset carries species names for every row', () => {
+  const spec = DATASETS.find((d) => d.key === 'spezies');
+  expect(spec).toBeDefined();
+  const rows = buildDataset(ctx, spec!);
+  expect(rows.length).toBe(47);
+  for (const row of rows) {
+    expect(row['Name Plural'], JSON.stringify(row)).toBeTruthy();
+    expect(row['Name Plural']).not.toBe('');
+  }
+});
+
+test('a known species (S36) resolves to its official plural name', () => {
+  const spec = DATASETS.find((d) => d.key === 'spezies');
+  expect(spec).toBeDefined();
+  const rows = buildDataset(ctx, spec!);
+  const s36 = rows.find((r) => r['ID'] === 'S36');
+  expect(s36).toMatchObject({ 'Name Plural': 'Achaz' });
+});
+
