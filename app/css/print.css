@@ -1,0 +1,31 @@
+/**
+ * Druckansicht — Stub.
+ *
+ * Die Erschaffung selbst wird nicht gedruckt; erst Schritt XII (Abschluss/Übersicht, von
+ * einem späteren Schritt-Modul ergänzt) wird eine echte Bogen-Druckansicht bekommen. Bis
+ * dahin sorgt diese Datei nur dafür, dass ein versehentlicher Druck kein zerschnittenes
+ * Drei-Spalten-Raster produziert: Bedienelemente und Navigation verschwinden, Inhalt bleibt
+ * einspaltig und lesbar.
+ */
+@media print {
+  .step-rail,
+  .basiswerte-panel,
+  .schritt-knopf,
+  .ap-band {
+    display: none !important;
+  }
+
+  .wizard-body {
+    display: block !important;
+  }
+
+  body {
+    background: #fff;
+    color: #000;
+  }
+
+  .regelkarte {
+    border: 1px solid #999;
+    box-shadow: none;
+  }
+}

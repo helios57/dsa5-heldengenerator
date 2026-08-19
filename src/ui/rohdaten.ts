@@ -1,0 +1,67 @@
+/**
+ * Schmale, typsichere Zugriffe auf rohe Datensatz-Zeilen (`DatensatzZeile` =
+ * `Record<string, unknown>`, siehe src/data/loader.ts). Die Felder in app/data/*.json sind
+ * NICHT einheitlich benannt (Spec-Hinweis) — diese Helfer machen den Zugriff defensiv statt
+ * an jeder Aufrufstelle erneut `unknown` zu entpacken, ohne die Rohdaten-Typen aus
+ * src/core zu duplizieren (die UI-Schicht bleibt für ihre eigenen Anzeigebedürfnisse
+ * zuständig, src/core bleibt unangetastet).
+ */
+import type { DatensatzZeile } from '../data/loader.ts';
+
+export function feldStr(zeile: DatensatzZeile, feld: string): string {
+  const wert = zeile[feld];
+  return typeof wert === 'string' ? wert : '';
+}
+
+export function feldNum(zeile: DatensatzZeile, feld: string): number {
+  const wert = zeile[feld];
+  return typeof wert === 'number' ? wert : 0;
+}
+
+export function feldStrArr(zeile: DatensatzZeile, feld: string): readonly string[] {
+  const wert = zeile[feld];
+  if (!Array.isArray(wert)) return [];
+  return wert.filter((eintrag): eintrag is string => typeof eintrag === 'string');
+}
+
+/** Paare aus String-Tupeln, z. B. `Vorteil`/`Nachteil`: `[["VT201", ""], ...]`. */
+export function feldStrPaare(zeile: DatensatzZeile, feld: string): ReadonlyArray<readonly [string, string]> {
+  const wert = zeile[feld];
+  if (!Array.isArray(wert)) return [];
+  const ergebnis: Array<readonly [string, string]> = [];
+  for (const eintrag of wert) {
+    if (
+      Array.isArray(eintrag) && eintrag.length === 2
+      && typeof eintrag[0] === 'string' && typeof eintrag[1] === 'string'
+    ) {
+      ergebnis.push([eintrag[0], eintrag[1]]);
+    }
+  }
+  return ergebnis;
+}
+
+/** Flache Name/Wert-Folgen, z. B. `Talent`: `["Schwimmen", 1, "Klettern", 2, ...]`. */
+export function feldNamenWerte(
+  zeile: DatensatzZeile, feld: string,
+): ReadonlyArray<{ readonly name: string; readonly wert: number }> {
+  const wert = zeile[feld];
+  if (!Array.isArray(wert)) return [];
+  const ergebnis: Array<{ name: string; wert: number }> = [];
+  for (let i = 0; i + 1 < wert.length; i += 2) {
+    const name = wert[i];
+    const zahl = wert[i + 1];
+    if (typeof name === 'string' && typeof zahl === 'number') ergebnis.push({ name, wert: zahl });
+  }
+  return ergebnis;
+}
+
+export function findeZeile(
+  zeilen: ReadonlyArray<DatensatzZeile>, idFeld: string, id: string,
+): DatensatzZeile | undefined {
+  return zeilen.find((zeile) => zeile[idFeld] === id);
+}
+
+/** "55" -> 55, "322+130" -> 452 (Kultur-/Professionspakete können mehrere Summanden haben). */
+export function summeGesamt(gesamt: string): number {
+  return gesamt.split('+').reduce((summe, teil) => summe + Number(teil), 0);
+}

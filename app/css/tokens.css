@@ -1,0 +1,96 @@
+/**
+ * Kanzlei — Entwurfstoken.
+ *
+ * Konzept: ein Kanzlei-Journal, kein SaaS-Dashboard. Dunkel als Grundzustand (Tinte auf
+ * dunklem Grund), Pergament NUR für lesende Regel-Oberflächen (.regelkarte). Zwei Akzente,
+ * nie gemeinsam auf demselben Element: Oxblood = Kosten/Verstoß, Bronze-Gold = Auswahl/
+ * Fokus/Abschluss.
+ *
+ * Schrift: Gentium Book Plus (Anzeige/Überschriften) und Alegreya Sans (Bedienung/Zahlen/
+ * Tabellen) — dieselben Familien, die das offizielle Heldendokument einbettet.
+ */
+
+:root {
+  /* Grundfarben — dunkel (Standard) */
+  --f-ground: #0a100e;
+  --f-surface: #121b19;
+  --f-surface-2: #182422;
+  --f-surface-3: #1f2e2b;
+  --f-border: #2a3733;
+  --f-border-strong: #3a4b45;
+
+  --f-text: #ece5d6;
+  --f-text-muted: #9a9a8c;
+  --f-text-dim: #6f7268;
+
+  /* Pergament — nur für lesende Regel-Oberflächen */
+  --f-parchment: #ece0c3;
+  --f-parchment-2: #e2d4ae;
+  --f-parchment-ink: #2a2115;
+  --f-parchment-ink-muted: #5a4f3c;
+  --f-parchment-border: #c3ac78;
+
+  /* Akzente */
+  --f-oxblood: #8a2e2c;
+  --f-oxblood-strong: #c04f42;
+  --f-oxblood-wash: rgba(138, 46, 44, 0.16);
+  --f-bronze: #b98c43;
+  --f-bronze-strong: #dab873;
+  --f-bronze-wash: rgba(185, 140, 67, 0.16);
+
+  --f-focus: var(--f-bronze-strong);
+
+  /* Schrift */
+  --f-font-display: 'Gentium Book Plus', Georgia, 'Times New Roman', serif;
+  --f-font-ui: 'Alegreya Sans', 'Segoe UI', Tahoma, Geneva, sans-serif;
+
+  /* Maße */
+  --f-radius-s: 2px;
+  --f-radius-m: 4px;
+  --f-rail-width: 15rem;
+  --f-panel-width: 19rem;
+  --f-band-height: 3.25rem;
+
+  --f-motion-fast: 160ms;
+  --f-motion-med: 320ms;
+  --f-motion-slow: 480ms;
+  --f-ease: cubic-bezier(0.2, 0.65, 0.3, 1);
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --f-ground: #efe9d8;
+    --f-surface: #f8f4e8;
+    --f-surface-2: #efe6cf;
+    --f-surface-3: #e6dab6;
+    --f-border: #cfc09a;
+    --f-border-strong: #b6a377;
+
+    --f-text: #251f15;
+    --f-text-muted: #5c5340;
+    --f-text-dim: #7c735c;
+
+    --f-parchment: #fffcf3;
+    --f-parchment-2: #f7eed8;
+    --f-parchment-ink: #241f16;
+    --f-parchment-ink-muted: #6b6046;
+    --f-parchment-border: #c8b587;
+
+    --f-oxblood: #7a1f1e;
+    --f-oxblood-strong: #932a26;
+    --f-oxblood-wash: rgba(122, 31, 30, 0.1);
+    --f-bronze: #7c5a1f;
+    --f-bronze-strong: #5f4415;
+    --f-bronze-wash: rgba(124, 90, 31, 0.14);
+
+    --f-focus: var(--f-bronze-strong);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --f-motion-fast: 0ms;
+    --f-motion-med: 0ms;
+    --f-motion-slow: 0ms;
+  }
+}

@@ -1,0 +1,576 @@
+/* Kanzlei — Bauteile: AP-Band, Schritt-Leiste, Basiswerte, Regelkarte, Marginalien,
+   Auswahl-Listen, Eigenschaften-Steller, Grad-Tabelle. */
+
+/* --- AP-Budgetband --------------------------------------------------- */
+
+.ap-band {
+  padding: 0.4rem 1.25rem 0.6rem;
+}
+
+.ap-band__zeile {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  font-size: 0.85rem;
+  color: var(--f-text-muted);
+  margin-bottom: 0.35rem;
+}
+
+.ap-band__label {
+  font-family: var(--f-font-display);
+  color: var(--f-text);
+  letter-spacing: 0.02em;
+}
+
+.ap-band__werte strong {
+  color: var(--f-text);
+  font-weight: 600;
+}
+
+.ap-band--ueberzogen .ap-band__werte {
+  color: var(--f-oxblood-strong);
+}
+
+.ap-band__lauf {
+  position: relative;
+  height: 6px;
+  background: var(--f-surface-3);
+  border: 1px solid var(--f-border);
+  overflow: hidden;
+}
+
+.ap-band__fuellung {
+  height: 100%;
+  background: var(--f-bronze);
+  width: 0%;
+  transition: width var(--f-motion-slow) var(--f-ease), background-color var(--f-motion-fast) linear;
+}
+
+.ap-band--ueberzogen .ap-band__fuellung {
+  background: var(--f-oxblood);
+}
+
+/* --- Schritt-Leiste ---------------------------------------------------- */
+
+.schritt-liste {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.schritt-knopf {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  width: 100%;
+  padding: 0.55rem 1.1rem;
+  background: transparent;
+  border: none;
+  border-left: 2px solid transparent;
+  text-align: left;
+  cursor: pointer;
+  color: var(--f-text-muted);
+}
+
+.schritt-knopf:hover {
+  background: var(--f-surface-2);
+  color: var(--f-text);
+}
+
+.schritt-knopf__ziffer {
+  font-family: var(--f-font-display);
+  font-size: 1rem;
+  width: 1.6rem;
+  text-align: center;
+  color: var(--f-text-dim);
+}
+
+.schritt-knopf__titel {
+  flex: 1;
+  font-size: 0.9rem;
+}
+
+.schritt-knopf__status {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  border: 1px solid var(--f-border-strong);
+  flex-shrink: 0;
+}
+
+.schritt-knopf--fertig .schritt-knopf__status {
+  background: var(--f-bronze);
+  border-color: var(--f-bronze);
+}
+
+.schritt-knopf[aria-current='step'] {
+  border-left-color: var(--f-bronze);
+  background: var(--f-surface-2);
+  color: var(--f-text);
+}
+
+.schritt-knopf[aria-current='step'] .schritt-knopf__ziffer {
+  color: var(--f-bronze-strong);
+}
+
+/* --- Basiswerte-Panel --------------------------------------------------- */
+
+.panel-titel {
+  font-size: 0.95rem;
+  color: var(--f-text-muted);
+  letter-spacing: 0.03em;
+  margin-bottom: 0.9rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--f-border);
+}
+
+.basiswerte-liste {
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem 1rem;
+}
+
+.basiswerte-eintrag {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--f-border);
+}
+
+.basiswerte-eintrag dt {
+  font-size: 0.72rem;
+  color: var(--f-text-dim);
+  letter-spacing: 0.06em;
+}
+
+.basiswerte-eintrag dd {
+  margin: 0;
+  font-size: 1.3rem;
+  font-family: var(--f-font-display);
+}
+
+.basiswerte-hinweis {
+  margin-top: 1rem;
+  font-size: 0.78rem;
+  font-style: italic;
+  font-family: var(--f-font-display);
+  color: var(--f-text-dim);
+}
+
+/* --- Regelkarte (Pergament) ---------------------------------------------- */
+
+.regelkarte {
+  background: var(--f-parchment);
+  color: var(--f-parchment-ink);
+  border: 1px solid var(--f-parchment-border);
+  border-radius: var(--f-radius-s);
+  padding: 0.9rem 1.1rem;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.25);
+}
+
+.regelkarte__titel {
+  font-family: var(--f-font-display);
+  font-size: 1rem;
+  margin: 0 0 0.35rem;
+  color: var(--f-parchment-ink);
+}
+
+.regelkarte__text {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: var(--f-parchment-ink-muted);
+  white-space: pre-line;
+}
+
+.regelkarten-gruppe {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-top: 0.75rem;
+}
+
+/* --- Marginalien --------------------------------------------------------- */
+
+.feld-mit-marginalie {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 0.85rem;
+}
+
+.marginale {
+  font-family: var(--f-font-display);
+  font-style: italic;
+  font-size: 0.82rem;
+  padding-left: 0.6rem;
+  border-left: 2px solid var(--f-border-strong);
+  color: var(--f-text-dim);
+}
+
+.marginale--info {
+  border-left-color: var(--f-bronze);
+  color: var(--f-text-muted);
+}
+
+.marginale--verletzung {
+  border-left-color: var(--f-oxblood);
+  color: var(--f-oxblood-strong);
+}
+
+.marginale.puls {
+  animation: marginale-puls 640ms var(--f-ease);
+}
+
+@keyframes marginale-puls {
+  0% { text-shadow: 0 0 0 rgba(138, 46, 44, 0); }
+  30% { text-shadow: 0 0 10px var(--f-oxblood-wash); }
+  100% { text-shadow: 0 0 0 rgba(138, 46, 44, 0); }
+}
+
+/* --- Abschnitte / Formfelder ------------------------------------------- */
+
+.abschnitt {
+  margin-bottom: 2rem;
+  max-width: 52rem;
+}
+
+.abschnitt-titel {
+  font-size: 1.1rem;
+  margin-bottom: 0.15rem;
+}
+
+.abschnitt-untertitel {
+  color: var(--f-text-muted);
+  font-size: 0.85rem;
+  margin: 0 0 1rem;
+}
+
+.unterabschnitt-titel {
+  font-family: var(--f-font-ui);
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--f-text-dim);
+  margin: 1.4rem 0 0.5rem;
+}
+
+label.feld-label {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--f-text-muted);
+  margin-bottom: 0.3rem;
+  letter-spacing: 0.02em;
+}
+
+.konzept-text {
+  width: 100%;
+  min-height: 5.5rem;
+  resize: vertical;
+  background: var(--f-surface-2);
+  border: 1px solid var(--f-border);
+  color: var(--f-text);
+  padding: 0.6rem 0.7rem;
+  font-size: 0.92rem;
+  border-radius: var(--f-radius-s);
+}
+
+.konzept-text:focus-visible {
+  border-color: var(--f-bronze);
+}
+
+/* --- Grad-Tabelle (Erfahrungsgrad) --------------------------------------- */
+
+.grad-tabelle {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.grad-tabelle caption {
+  text-align: left;
+  font-size: 0.8rem;
+  color: var(--f-text-dim);
+  margin-bottom: 0.5rem;
+  font-style: italic;
+  font-family: var(--f-font-display);
+}
+
+.grad-tabelle th {
+  text-align: left;
+  font-weight: 400;
+  color: var(--f-text-dim);
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 0.4rem 0.6rem;
+  border-bottom: 1px solid var(--f-border-strong);
+}
+
+.grad-tabelle td {
+  padding: 0.45rem 0.6rem;
+  border-bottom: 1px solid var(--f-border);
+}
+
+.grad-tabelle td.zahl,
+.grad-tabelle th.zahl {
+  text-align: right;
+}
+
+.grad-zeile--gewaehlt {
+  background: var(--f-bronze-wash);
+}
+
+.grad-zeile label {
+  font-family: var(--f-font-display);
+  cursor: pointer;
+}
+
+/* --- Auswahl-Listen (Spezies / Kultur) ----------------------------------- */
+
+.suchfeld {
+  width: 100%;
+  background: var(--f-surface-2);
+  border: 1px solid var(--f-border);
+  color: var(--f-text);
+  padding: 0.5rem 0.7rem;
+  font-size: 0.92rem;
+  border-radius: var(--f-radius-s);
+  margin-bottom: 0.75rem;
+}
+
+.suchfeld:focus-visible {
+  border-color: var(--f-bronze);
+}
+
+.auswahl-liste {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 22rem;
+  overflow-y: auto;
+  border: 1px solid var(--f-border);
+}
+
+.auswahl-zeile {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.55rem 0.85rem;
+  background: var(--f-surface);
+  border: none;
+  border-left: 3px solid transparent;
+  border-bottom: 1px solid var(--f-border);
+  color: var(--f-text);
+  text-align: left;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.auswahl-liste li:last-child .auswahl-zeile {
+  border-bottom: none;
+}
+
+.auswahl-zeile:hover {
+  background: var(--f-surface-2);
+}
+
+.auswahl-zeile--gewaehlt {
+  border-left-color: var(--f-bronze);
+  background: var(--f-bronze-wash);
+}
+
+.auswahl-zeile__name {
+  font-family: var(--f-font-display);
+  flex: 1;
+}
+
+.auswahl-zeile__ap {
+  color: var(--f-text-muted);
+  min-width: 4.5rem;
+  text-align: right;
+}
+
+.auswahl-zeile__mods {
+  flex-basis: 100%;
+  color: var(--f-text-dim);
+  font-size: 0.78rem;
+}
+
+.leere-liste-hinweis {
+  padding: 1rem;
+  color: var(--f-text-dim);
+  font-style: italic;
+  font-family: var(--f-font-display);
+}
+
+/* --- Entweder/Oder-Wahl (Spezies-Attributsabzug) ------------------------- */
+
+.ewwahl {
+  margin-top: 0.6rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.25rem;
+  align-items: baseline;
+}
+
+.ewwahl__hinweis {
+  flex-basis: 100%;
+  font-size: 0.8rem;
+  color: var(--f-text-muted);
+}
+
+.ewwahl label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.mod-tag {
+  display: inline-block;
+  padding: 0.1rem 0.4rem;
+  border: 1px solid var(--f-border-strong);
+  border-radius: var(--f-radius-s);
+  font-size: 0.78rem;
+  color: var(--f-text-muted);
+  margin-right: 0.3rem;
+}
+
+/* --- Kultur-Paket -------------------------------------------------------- */
+
+.kultur-details {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.kultur-details summary {
+  cursor: pointer;
+  color: var(--f-bronze-strong);
+}
+
+.paket-liste {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+  gap: 0.2rem 1rem;
+}
+
+.paket-liste li {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px dotted var(--f-border);
+  padding: 0.15rem 0;
+  color: var(--f-text-muted);
+}
+
+/* --- Eigenschaften-Steller ------------------------------------------------ */
+
+.eigenschaften-raster {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15.5rem, 1fr));
+  gap: 1rem;
+}
+
+.eigenschaft-zeile {
+  border: 1px solid var(--f-border);
+  padding: 0.75rem 0.9rem;
+  background: var(--f-surface);
+}
+
+.eigenschaft-kopf {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 0.5rem;
+}
+
+.eigenschaft-name {
+  font-family: var(--f-font-display);
+  font-size: 1rem;
+}
+
+.eigenschaft-lang {
+  font-size: 0.72rem;
+  color: var(--f-text-dim);
+  margin-left: 0.3rem;
+}
+
+.eigenschaft-final {
+  font-size: 1.35rem;
+}
+
+.eigenschaft-modifikator {
+  font-size: 0.78rem;
+  color: var(--f-bronze-strong);
+  margin-left: 0.25rem;
+  vertical-align: super;
+}
+
+.eigenschaft-steuerung {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.stepper-knopf {
+  width: 1.9rem;
+  height: 1.9rem;
+  background: var(--f-surface-2);
+  border: 1px solid var(--f-border-strong);
+  color: var(--f-text);
+  font-size: 1.05rem;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.stepper-knopf:hover:not(:disabled) {
+  background: var(--f-surface-3);
+}
+
+.stepper-knopf:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.stepper-feld {
+  width: 3.2rem;
+  text-align: center;
+  background: var(--f-surface-2);
+  border: 1px solid var(--f-border);
+  color: var(--f-text);
+  padding: 0.3rem 0.2rem;
+  font-size: 0.95rem;
+}
+
+.eigenschaft-kosten {
+  margin-left: auto;
+  font-size: 0.78rem;
+  color: var(--f-text-muted);
+}
+
+.eigenschaft-zeile .marginale {
+  display: block;
+  margin-top: 0.5rem;
+}
+
+.eigenschaften-summe {
+  margin-top: 1.1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--f-border);
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  color: var(--f-text-muted);
+}
+
+.eigenschaften-summe strong {
+  color: var(--f-text);
+}
