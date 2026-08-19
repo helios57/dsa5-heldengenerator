@@ -56,6 +56,33 @@ export const DATASETS: readonly DatasetSpec[] = [
   //    row would collapse to the same empty stub.
   { key: 'eigenschaften', fn: 'EigenschaftGetInfo', count: 7, zeroBased: true,
     fields: ['ID', 'Kurz', 'Lang', 'Opt_ID'] },
+  // sf_allgemein/sf_kampf/sf_magisch/sf_karmal/ausruestung: none of these five *GetInfo
+  // functions expose an 'ID' sInfoID/pInfoID case (verified by reading every `case` in each
+  // build/js/<Fn>.js's second switch) — unlike talente/vorteile/nachteile/zauber/liturgien,
+  // rows are addressed purely by their zero-based index or by name string, so there is no
+  // 'ID' field to capture ("ID (if it exists)" — it doesn't, here). Every dataset's per-key
+  // unknown-field fallback sentinel (the `default: return N` in that switch) was read
+  // directly from source and confirmed equal to `count` below, e.g. SFAllgGetInfo's
+  // `default: return 611`.
+  { key: 'sf_allgemein', fn: 'SFAllgGetInfo', count: 611, zeroBased: true,
+    fields: ['Name divers', 'Name männlich', 'Name weiblich', 'BasisKosten', 'Regel', 'Typ',
+             'Subtyp', 'Verweise', 'Werke', 'Liste'] },
+  { key: 'sf_kampf', fn: 'SFKampfGetInfo', count: 356, zeroBased: true,
+    fields: ['Name divers', 'Name männlich', 'Name weiblich', 'BasisKosten', 'Regel', 'Typ',
+             'Subtyp', 'BSP', 'Verweise', 'Werke'] },
+  { key: 'sf_magisch', fn: 'SFMagGetInfo', count: 880, zeroBased: true,
+    fields: ['Name divers', 'Name männlich', 'Name weiblich', 'BasisKosten', 'Regel', 'Typ',
+             'Subtyp', 'Gruppe', 'Merkmal', 'AsP', 'VP', 'Verweise', 'Werke', 'Liste',
+             'Tradverweise'] },
+  { key: 'sf_karmal', fn: 'SFKarmGetInfo', count: 476, zeroBased: true,
+    fields: ['Name divers', 'Name männlich', 'Name weiblich', 'BasisKosten', 'Regel', 'Typ',
+             'Subtyp', 'Aspekt', 'Trance', 'Tradition', 'Verweise', 'Werke', 'Liste',
+             'Tradverweise'] },
+  // Besitz*: field names differ from every other dataset (Gewicht/Wert/Typ, not
+  // Kosten/BasisKosten/Gruppe) — kept verbatim from BesitzGetInfo's own pInfoID cases
+  // rather than renamed, so a lookup against the PDF source stays a straight text match.
+  { key: 'ausruestung', fn: 'BesitzGetInfo', count: 3308, zeroBased: true,
+    fields: ['Name', 'Gewicht', 'Wert', 'Typ'] },
 ];
 
 const isEmpty = (v: unknown): boolean =>
