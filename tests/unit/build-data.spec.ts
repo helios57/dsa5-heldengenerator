@@ -18,6 +18,18 @@ test('reports the documented collection sizes', () => {
   for (const [fn, size] of sizes) expect(ctx.call(fn, '', ''), fn).toBe(size);
 });
 
+test('the Acrobat host stub is genuinely reachable via unqualified `this`', () => {
+  // Regression guard: in a vm context, unqualified top-level `this` resolves to the
+  // context's global object, NOT to a property literally named "this" on the sandbox.
+  // Host members must be assigned onto the sandbox root for `this.getField(...)` etc.
+  // to work inside loaded scripts.
+  expect(() => ctx.call('this.getField', 'X')).not.toThrow();
+  const field = ctx.call('this.getField', 'X') as { value: unknown };
+  expect(field).toBeTruthy();
+  expect(field.value).toBe('');
+  expect(ctx.call('this.calculateNow')).toBeUndefined();
+});
+
 test('reads a Talent with its check attributes and column', () => {
   expect(ctx.call('TalentGetInfo', 1, 'Name')).toBe('Fliegen');
   expect(ctx.call('TalentGetInfo', 1, 'Probe')).toEqual(['MU', 'IN', 'GE']);

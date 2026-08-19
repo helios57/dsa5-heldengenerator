@@ -10,8 +10,15 @@ export type RulesContext = {
 /**
  * Builds a vm context with every extracted Acrobat function loaded.
  * The document JS expects an Acrobat host (`this.getField`, `app`, `util`, `event`).
+ * Inside a vm context, unqualified top-level `this` resolves to the context's global
+ * object (verified: `this === globalThis` inside the context), NOT to a property
+ * literally named `"this"` on the sandbox. So the host members (`getField`,
+ * `numFields`, `getNthFieldName`, `calculate`, `calculateNow`) are assigned directly
+ * onto the sandbox object itself, which becomes that global object — that is what
+ * makes `this.getField(...)` etc. resolve inside loaded scripts.
  * The `*GetInfo` lookup functions never depend on real field values, so an inert stub
- * suffices; purely UI functions fail to load and are simply never called.
+ * suffices; scripts that fail to load either aren't valid JS on their own (e.g. HTML
+ * fragments) or need Acrobat host features this stub does not provide (e.g. dialogs).
  */
 export function createRulesContext(scriptDir: string): RulesContext {
   const field = {
@@ -34,8 +41,9 @@ export function createRulesContext(scriptDir: string): RulesContext {
     event: {},
     color: {},
     display: { visible: 0, hidden: 1 },
-  };
-  sandbox['this'] = {
+    // These become properties of the vm context's global object, which is what
+    // unqualified top-level `this` resolves to inside loaded scripts (see comment
+    // above) — so `this.getField(...)` etc. reach these, not a dead `sandbox.this`.
     getField: () => field,
     numFields: 0,
     getNthFieldName: () => '',
