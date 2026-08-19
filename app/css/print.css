@@ -1,22 +1,94 @@
 /**
- * Druckansicht — Stub.
- *
- * Die Erschaffung selbst wird nicht gedruckt; erst Schritt XII (Abschluss/Übersicht, von
- * einem späteren Schritt-Modul ergänzt) wird eine echte Bogen-Druckansicht bekommen. Bis
- * dahin sorgt diese Datei nur dafür, dass ein versehentlicher Druck kein zerschnittenes
- * Drei-Spalten-Raster produziert: Bedienelemente und Navigation verschwinden, Inhalt bleibt
- * einspaltig und lesbar.
+ * Druckansicht — der kompakte Spielbogen aus Schritt XII (`.spielbogen-druck`, gebaut in
+ * `src/ui/wizard/steps/abschluss.ts::baueSpielbogen`). Die Erschaffungs-Oberfläche selbst
+ * (Leiste, AP-Band, Basiswerte-Panel, alle Bedienelemente) wird nie gedruckt — nur der
+ * Spielbogen-Ausschnitt, unabhängig davon, welcher Schritt gerade sichtbar ist (`.step-content`
+ * wird komplett ausgeblendet; `.spielbogen-druck` liegt als eigenes Element in Schritt XII und
+ * wird nur für den Druck sichtbar geschaltet, siehe `.spielbogen-druck { display: none }` in
+ * components.css).
  */
+@page {
+  size: A4;
+  margin: 12mm;
+}
+
 @media print {
   .step-rail,
   .basiswerte-panel,
+  .ap-band,
   .schritt-knopf,
-  .ap-band {
+  .suchfeld,
+  .stepper-knopf,
+  .stepper-feld,
+  .export-knopf-reihe,
+  .export-fortschritt,
+  .import-reihe,
+  .pruefbericht-liste,
+  .ap-bilanz,
+  .abschnitt-untertitel,
+  .konzept-text,
+  select,
+  input,
+  button,
+  #status {
     display: none !important;
   }
 
+  .kanzlei,
   .wizard-body {
     display: block !important;
+    min-height: 0;
+  }
+
+  .step-content {
+    padding: 0;
+    overflow: visible;
+  }
+
+  /* Nur der Spielbogen des aktuell gerenderten Schritts XII ist im Druck sichtbar. Andere
+     Schritte enthalten kein `.spielbogen-druck`-Element, drucken also einfach nichts (leere
+     Seite) — das ist beabsichtigt: der Spielbogen ist nur erreichbar, indem man zu Schritt XII
+     wechselt und dort druckt. */
+  .spielbogen-druck {
+    display: block !important;
+    font-family: 'Alegreya Sans', 'Segoe UI', Tahoma, Geneva, sans-serif;
+    font-size: 9.5pt;
+    line-height: 1.35;
+    color: #000;
+    background: #fff;
+  }
+
+  .spielbogen-druck h2 {
+    font-family: 'Gentium Book Plus', Georgia, 'Times New Roman', serif;
+    font-size: 15pt;
+    margin: 0 0 2mm;
+  }
+
+  .spielbogen-kopf {
+    font-style: italic;
+    margin: 0 0 4mm;
+    color: #333;
+  }
+
+  .spielbogen-block {
+    break-inside: avoid;
+    margin-bottom: 2.5mm;
+    padding-bottom: 2mm;
+    border-bottom: 0.5pt solid #999;
+  }
+
+  .spielbogen-block h3 {
+    font-family: 'Gentium Book Plus', Georgia, 'Times New Roman', serif;
+    font-size: 10pt;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin: 0 0 1mm;
+    color: #444;
+  }
+
+  .spielbogen-block p {
+    margin: 0;
+    font-variant-numeric: tabular-nums;
   }
 
   body {

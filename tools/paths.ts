@@ -6,7 +6,9 @@ export const APP_DIR: string = join(ROOT, 'app');
 export const DATA_DIR: string = join(APP_DIR, 'data');
 export const BUILD_DIR: string = join(ROOT, 'build');
 export const JS_DIR: string = join(BUILD_DIR, 'js');
+// The template lives under app/ because GitHub Pages publishes only that directory and the
+// browser fetches it at runtime. The build tooling reads the same single copy - no duplicate.
 export const SOURCE_PDF: string = join(
-  ROOT,
+  APP_DIR,
   '423187-Charakterbogen_V2_13_(ausfuellbar_selbstrechnend_ohne_Hintergrund)_korr_V2.pdf',
 );
