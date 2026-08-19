@@ -13,8 +13,8 @@ welche Grenze gerade greift. Genau das macht dieses Werkzeug sichtbar.
 ## Funktionsumfang
 
 - **Assistent** in zwölf Schritten, in der Reihenfolge des Regelwerks
-- **Vollständiger Datenbestand**: 46 Spezies, 56 Kulturen, 951 Professionen,
-  61 Talente, 856 Zauber, 349 Liturgien, 2.323 Sonderfertigkeiten, 3.308 Gegenstände
+- **Vollständiger Datenbestand**: 47 Spezies, 57 Kulturen, 952 Professionen,
+  61 Talente, 857 Zauber, 350 Liturgien, 2.327 Sonderfertigkeiten, 3.309 Gegenstände
 - **Regeln im Klartext** an jeder Wahl, samt Voraussetzungen und Kostenvorschau
 - **Grenzen mit Begründung** — „begrenzt durch KL 13 +2" statt nur einer Zahl
 - **Import und Export**: eigenes JSON-Format und das offizielle Heldendokument-PDF

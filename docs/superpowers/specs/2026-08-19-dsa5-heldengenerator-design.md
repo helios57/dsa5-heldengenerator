@@ -26,16 +26,16 @@ Verifiziert durch Ausführung der Funktionen in Node:
 
 | Datensatz | Anzahl | Datensatz | Anzahl |
 |---|---:|---|---:|
-| Spezies | 46 | Zauber | 856 |
-| Kulturen | 56 | Liturgien | 349 |
-| Professionen | 951 | Segnungen | 11 |
-| Talente | 61 | Zaubertricks | 118 |
-| Kampftechniken | 22 | Sonderfertigkeiten (allg.) | 611 |
-| Vorteile | 234 | Sonderfertigkeiten (Kampf) | 356 |
-| Nachteile | 161 | Sonderfertigkeiten (magisch) | 880 |
-| Sprachen | 101 | Sonderfertigkeiten (karmal) | 476 |
-| Traditionen | 61 | Ausrüstung | 3.308 |
-| Rüstungen | 162 | Waffen (nah / fern) | 761 / 146 |
+| Spezies | 47 | Zauber | 857 |
+| Kulturen | 57 | Liturgien | 350 |
+| Professionen | 952 | Segnungen | 12 |
+| Talente | 61 | Zaubertricks | 119 |
+| Kampftechniken | 22 | Sonderfertigkeiten (allg.) | 612 |
+| Vorteile | 235 | Sonderfertigkeiten (Kampf) | 357 |
+| Nachteile | 162 | Sonderfertigkeiten (magisch) | 881 |
+| Sprachen | 102 | Sonderfertigkeiten (karmal) | 477 |
+| Traditionen | 62 | Ausrüstung | 3.309 |
+| Rüstungen | 163 | Waffen (nah / fern) | 762 / 147 |
 
 Die Daten liegen als `*GetInfo(id, feld)`-Funktionen vor — reine Nachschlagefunktionen
 über `switch`-Blöcke. Sie sind maschinell auslesbar.
@@ -66,7 +66,7 @@ Die Extraktion muss pro Stream erkennen, sonst zerfallen Umlaute.
 | Druck | Offizielles Blatt **plus** kompakte Druckansicht | Offiziell fürs Archiv, kompakt für den Spieltisch |
 | Regelstrenge | Harte Sperre mit Schalter „Regeln lockern“ | Ehrliche Voreinstellung, Hausregeln bleiben möglich |
 | Vorlage-PDF | Im Projekt mitgeliefert | Offline-Export ohne Zusatzschritt; Dateiauswahl als Rückfall |
-| Einstieg | Archetyp-Vorauswahl plus Suche | 951 Professionen sind ohne Vorfilter unbenutzbar |
+| Einstieg | Archetyp-Vorauswahl plus Suche | 952 Professionen sind ohne Vorfilter unbenutzbar |
 
 ## 4. Architektur
 
@@ -286,7 +286,7 @@ nennt die entsprechenden Regelwerk-Schritte.
 | 7 | Fertigkeiten und Kampftechniken | 8, 9 | Kampftechniken ab 6; beide Schranken aus 5.2 gleichzeitig |
 | 8 | Sonderfertigkeiten | 10 | Voraussetzungen; Merkmals-/Aspektkenntnis hebt die 14er-Grenze |
 | 9 | Magie und Karma | 8, 10 | nur bei Tradition; Anzahl und Fremdzauber je Erfahrungsgrad; Professionszauber zählen mit |
-| 10 | Ausrüstung | 13 | Geld, Gewicht, Waffen und Rüstung aus 3.308 Gegenständen |
+| 10 | Ausrüstung | 13 | Geld, Gewicht, Waffen und Rüstung aus 3.309 Gegenständen |
 | 11 | Details | 11, 14, 15 | Startalter je Spezies/Erfahrungsgrad, Größe und Gewicht, Name, Aussehen |
 | 12 | Prüfen und Ausgeben | — | Prüfbericht inkl. **Restbestand ≤ 10 AP**, danach JSON, PDF, Druck |
 
@@ -313,7 +313,7 @@ Der eigentliche Zweck des Projekts. Kein nachträglich angeklebtes Tooltip-Syste
 - **Konzeptprüfung**: meldet Unstimmigkeiten — magische Profession ohne Tradition,
   gekaufte AE ohne Zauber, Eigenschaften quer zu den Proben der Profession,
   nicht ausgegebene AP, nicht ausgeschöpfte Nachteil-AP.
-- **Archetypen** in Schritt 1 filtern die 951 Professionen auf ein menschliches Maß
+- **Archetypen** in Schritt 1 filtern die 952 Professionen auf ein menschliches Maß
   und schlagen passende Spezies und Kulturen vor. Volle Suche bleibt einen Klick entfernt.
 
 ## 7. Import und Export
