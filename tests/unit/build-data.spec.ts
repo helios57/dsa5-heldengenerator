@@ -167,11 +167,65 @@ test('every dataset yields the documented row count (regression guard for the ze
     sprachen: 102,
     traditionen: 62,
     eigenschaften: 8,
+    sf_allgemein: 612,
+    sf_kampf: 357,
+    sf_magisch: 881,
+    sf_karmal: 477,
+    ausruestung: 3309,
   };
   for (const spec of DATASETS) {
     const rows = buildDataset(ctx, spec);
     expect(rows.length, spec.key).toBe(expected[spec.key]);
   }
+});
+
+// --- Task 1: Sonderfertigkeiten (sf_allgemein/sf_kampf/sf_magisch/sf_karmal) + ausruestung ---
+//
+// None of these five *GetInfo functions has an 'ID' sInfoID/pInfoID case (checked directly
+// in build/js/<Fn>.js), so rows carry no separate 'ID' field — only the name key(s). Each
+// dataset's row count is verified against its own `default: return N` unknown-key fallback
+// sentinel read straight from source (see the DATASETS comment), which is also exactly the
+// trap `buildDataset` must not fall into: a genuine field value that happens to equal that
+// sentinel gets dropped, same class of trap as the VT201/AP case above.
+
+test('sf_allgemein/sf_kampf/sf_magisch/sf_karmal carry a name for every row and Regel text for the vast majority', () => {
+  // A handful of entries are parametrised placeholders whose rule text lives on a sub-option
+  // instead (e.g. sf_allgemein's "Talentstil: (Stil)", sf_karmal's "Tradition") — confirmed
+  // directly in source: `build/js/SFAllgGetInfo.js` sets `aDaten[5] = ""` (Regel) for those
+  // rows verbatim, it is not an extraction bug. So every row must have a name, but only the
+  // large majority need non-empty Regel text.
+  for (const key of ['sf_allgemein', 'sf_kampf', 'sf_magisch', 'sf_karmal'] as const) {
+    const spec = DATASETS.find((d) => d.key === key);
+    expect(spec, key).toBeDefined();
+    const rows = buildDataset(ctx, spec!);
+    expect(rows.length, key).toBeGreaterThan(0);
+    let mitRegel = 0;
+    for (const row of rows) {
+      expect(row['Name divers'], `${key}: ${JSON.stringify(row)}`).toBeTruthy();
+      if (typeof row['Regel'] === 'string' && row['Regel'] !== '') mitRegel++;
+    }
+    expect(mitRegel / rows.length, key).toBeGreaterThan(0.9);
+  }
+});
+
+test('sf_allgemein carries a known Sonderfertigkeit (Allgemeinwissen, index 0) with its rules text', () => {
+  const spec = DATASETS.find((d) => d.key === 'sf_allgemein');
+  expect(spec).toBeDefined();
+  const rows = buildDataset(ctx, spec!);
+  const eintrag = rows.find((r) => r['Name divers'] === 'Allgemeinwissen');
+  expect(eintrag).toMatchObject({ BasisKosten: '10', Typ: 'allgemein' });
+  expect(eintrag?.['Regel']).toContain('Regel:');
+  expect(eintrag?.['Regel']).toContain('Voraussetzungen');
+});
+
+test('ausruestung carries name, weight, price and group for a real item', () => {
+  const spec = DATASETS.find((d) => d.key === 'ausruestung');
+  expect(spec).toBeDefined();
+  const rows = buildDataset(ctx, spec!);
+  expect(rows.length).toBeGreaterThan(0);
+  for (const row of rows) expect(row['Name'], JSON.stringify(row)).toBeTruthy();
+  const abakus = rows.find((r) => r['Name'] === 'Abakus');
+  expect(abakus).toMatchObject({ Gewicht: '0,5', Wert: '10', Typ: ['Handel'] });
 });
 
 test('vorteile includes the first entry in the rulebook, Adel I (index 0)', () => {
